@@ -15,7 +15,6 @@ extern int  localnum;                           /* number of local variables  */
 extern char localtypes[MAXLINES];               /* types of local variables   */
 extern char localnames[MAXLINES][MAXLINES];     /* names of local variables   */
 extern int  localwidths[MAXLINES];              /* widths of local variables  */
-
 int labelnum = 0;
 int branchnum = 0;
 
@@ -51,24 +50,35 @@ void bgnstmt()
  */
 struct sem_rec *call(char *f, struct sem_rec *args)
 {
-   int argcount = 0, buflen = 0, globnum = nexttemp(), callnum = nexttemp();
+   int argcount = 0, buflen = 0, globnum = 0, callnum = 0, mode = 0;
+   char type;
+   struct id_entry *p;
 
    for(struct sem_rec *r = args; r; r = r->back.s_link){
       argcount++;
-      char type = tsize(r->s_mode) == 8 ? 'f' : 'i';
+      type = tsize(r->s_mode) == 8 ? 'f' : 'i';
       printf("arg%c t%d\n", type, r->s_place);
       buflen += sprintf(quadbuf + buflen, " t%d", r->s_place);
    }
 
-   // assign func scope/name to temp (t2 := global function_name)
+   
+   if((p = lookup(f, 0)) == NULL){
+      mode = T_INT;
+   }
+   else{
+      mode = p->i_type;
+   }
+
+   type = mode == T_DOUBLE ? 'f' : 'i';
+   globnum = nexttemp();
    printf("t%d := global %s\n", globnum, f);
+   callnum = nexttemp();
+
    if(argcount == 0)
-      printf("t%d := fi t%d %d\n", callnum, globnum, argcount);
+      printf("t%d := f%c t%d %d\n", callnum, type, globnum, argcount);
    else
-      printf("t%d := fi t%d %d%s\n", callnum, globnum, argcount, quadbuf);
-   //fprintf(stderr, "sem: call not implemented\n");
-   //return ((struct sem_rec *) NULL);
-   return (node(callnum, T_INT, NULL, NULL));
+      printf("t%d := f%c t%d %d%s\n", callnum, type, globnum, argcount, quadbuf);
+   return (node(callnum, mode, NULL, NULL));
 }
 
 /*
@@ -113,10 +123,9 @@ struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2)
  * con - constant reference in an expression
  */
 struct sem_rec *con(char *x)
-{
-   //fprintf(stderr, "sem: con not implemented\n");
-   //return ((struct sem_rec *) NULL);
+{  
    struct id_entry *p;
+   int quadnum = nexttemp();
 
    if((p = lookup(x, 0)) == NULL){
       p = install(x, 0);
@@ -126,8 +135,8 @@ struct sem_rec *con(char *x)
       p->i_width = 4;
    }
 
-   printf("t%d := %s\n", nexttemp(), x);
-   return (node((currtemp()), p->i_type, NULL, NULL));
+   printf("t%d := %s\n", quadnum, x);
+   return (node(quadnum, p->i_type, NULL, NULL));
 }
 
 /*
@@ -176,14 +185,15 @@ void dogoto(char *id)
  */
 void doif(struct sem_rec *e, int m1, int m2)
 {
-   for(struct sem_rec *r = e; r; r = r->back.s_true){
-      printf("B%d=L%d\n", r->s_place, m1);
+   struct sem_rec *r = e;
+
+   for( ; r->back.s_link; r = r->back.s_link){
+      printf("B%d=L%d\n", r->back.s_link->s_place, m1);
+      printf("B%d=L%d\n", r->s_false->s_place, m2);
    }
-   for(struct sem_rec *r = e; r; r = r->s_false){
-      printf("B%d=L%d\n", r->s_place, m1);
-   }
-   
-   //fprintf(stderr, "sem: doif not implemented\n");
+
+   printf("B%d=L%d\n", r->s_place, m1);
+   printf("B%d=L%d\n", r->s_false->s_place, m2);
 }
 
 /*
@@ -240,22 +250,20 @@ struct sem_rec *exprs(struct sem_rec *l, struct sem_rec *e)
  */
 void fhead(struct id_entry *p)
 {
-   //fprintf(stderr, "sem: fhead not implemented\n");
-   int type, width;
    printf("func %s %d\n", p->i_name, p->i_type);
    
    for(int i = 0; i < formalnum; i++){
-      type = formaltypes[i] == 'i' ? T_INT : T_DOUBLE;
-      width = type == T_INT ? 4 : 8;
+      int type = formaltypes[i] == 'i' ? T_INT : T_DOUBLE;
+      int width = type == T_INT ? 4 : 8;
       printf("formal %s %d %d\n", formalnames[i], type, width);
    }
 
    for(int i = 0; i < localnum; i++){
-      type = localtypes[i] == 'i' ? T_INT : T_DOUBLE;
+      int type = localtypes[i] == 'i' ? T_INT : T_DOUBLE;
       if(localwidths[i] > 1){
          type |= T_ARRAY;
       }
-      width = type == (type & T_INT) ? 4 * localwidths[i] : 8 * localwidths[i];
+      int width = type == (type & T_INT) ? 4 * localwidths[i] : 8 * localwidths[i];
       printf("localloc %s %d %d\n", localnames[i], type, width);
    }
 }
@@ -290,7 +298,6 @@ struct id_entry *fname(int t, char *id)
  */
 void ftail()
 {
-   //fprintf(stderr, "sem: ftail not implemented\n");
    fprintf(stdout, "fend\n");
    leaveblock();
 }
@@ -300,9 +307,8 @@ void ftail()
  */
 struct sem_rec *id(char *x)
 {
-   //fprintf(stderr, "sem: id not implemented\n");
-   //return ((struct sem_rec *) NULL);
    struct id_entry *p;
+   int quadnum = nexttemp();
 
    if((p = lookup(x, 0)) == NULL){
       yyerror("undeclared identifier");
@@ -310,15 +316,15 @@ struct sem_rec *id(char *x)
       p->i_type = T_INT;
    }
    if(p->i_scope == GLOBAL){
-      printf("t%d := global %s\n", nexttemp(), x);
+      printf("t%d := global %s\n", quadnum, x);
    }
    else if(p->i_scope == PARAM){
-      printf("t%d := param %s %d\n", nexttemp(), x, p->i_offset);
+      printf("t%d := param %s %d\n", quadnum, x, p->i_offset);
    }
    else if(p->i_scope == LOCAL){
-      printf("t%d := local %s %d\n", nexttemp(), x, p->i_offset);
+      printf("t%d := local %s %d\n", quadnum, x, p->i_offset);
    }
-   return (node((currtemp()), p->i_type|T_ADDR, NULL, NULL));
+   return (node(quadnum, p->i_type|T_ADDR, NULL, NULL));
 }
 
 /*
@@ -360,11 +366,9 @@ int m()
  */
 struct sem_rec *n()
 {
-   struct sem_rec *r = node(nextbranch(), T_LBL, NULL, NULL);
-   printf("br B%d\n", r->s_place);
-   return r;
-   //fprintf(stderr, "sem: n not implemented\n");
-   //return ((struct sem_rec *) NULL);
+   int quadnum = nextbranch();
+   printf("br B%d\n", quadnum);
+   return (node(quadnum, T_LBL, NULL, NULL));
 }
 
 /*
@@ -373,17 +377,30 @@ struct sem_rec *n()
 struct sem_rec *op1(char *op, struct sem_rec *y)
 {
    char type;
-   int mode = y->s_mode, quadnum = nexttemp();
+   int quadnum = nexttemp();
 
    if(*op == '@'){
-      mode &= ~T_ADDR;
+      y->s_mode &= ~T_ADDR;
    }
+
+   if(tsize(y->s_mode & ~T_ARRAY) != 0){
+      y->s_mode &= ~T_ARRAY;
+   }
+   
    if(op == "cv"){
-      type = tsize(mode) == 8 ? 'i' : 'f';
+      if(y->s_mode == T_DOUBLE){
+         type = 'i';
+         y->s_mode = T_INT;
+      }
+      else{
+         type = 'f';
+         y->s_mode = T_DOUBLE;
+      }
    }
    else{
-      type = tsize(mode) == 8 ? 'f' : 'i';
+      type = tsize(y->s_mode) == 8 ? 'f' : 'i';
    }
+   
 
    printf("t%d := %s%c t%d\n", quadnum, op, type, y->s_place);
    return (node(quadnum, y->s_mode, NULL, NULL));
@@ -394,22 +411,17 @@ struct sem_rec *op1(char *op, struct sem_rec *y)
  */
 struct sem_rec *op2(char *op, struct sem_rec *x, struct sem_rec *y)
 {
-   char type = 'i';
-   
-   if(x->s_mode == T_DOUBLE || y->s_mode == T_DOUBLE){
-      type = 'f';
-      if(x->s_mode != T_DOUBLE){
-         x = op1("cv", x);
-      }
-      if(y->s_mode != T_DOUBLE){
-         y = op1("cv", y);
-      }
+   if(x->s_mode == T_DOUBLE && y->s_mode != T_DOUBLE){
+      y = op1("cv", y);
+   }
+   if(y->s_mode == T_DOUBLE && x->s_mode != T_DOUBLE){
+      x = op1("cv", x);
    }
 
-   printf("t%d := t%d %s%c t%d\n", (nexttemp()), x->s_place, op, type, y->s_place);
-   return (node((currtemp()), x->s_mode, NULL, NULL));
-   //fprintf(stderr, "sem: op2 not implemented\n");
-   //return ((struct sem_rec *) NULL);
+   int quadnum = nexttemp();
+   char type = (x->s_mode == T_DOUBLE) ? 'f' : 'i';
+   printf("t%d := t%d %s%c t%d\n", quadnum, x->s_place, op, type, y->s_place);
+   return (node(quadnum, x->s_mode, NULL, NULL));
 }
 
 /*
@@ -474,8 +486,7 @@ void startloopscope()
  */
 struct sem_rec *string(char *s)
 {
-   //fprintf(stderr, "sem: string not implemented\n");
-   //return ((struct sem_rec *) NULL);
-   printf("t%d := %s\n", nexttemp(), s);
-   return (node(currtemp(), T_STR|T_ADDR, NULL, NULL));
+   int quadnum = nexttemp();
+   printf("t%d := %s\n", quadnum, s);
+   return (node(quadnum, T_STR|T_ADDR, NULL, NULL));
 }

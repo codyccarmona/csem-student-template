@@ -1,0 +1,8 @@
+15c15
+< bgnstmt 10
+---
+> bgnstmt 9
+22c22
+< bgnstmt 12
+---
+> bgnstmt 11

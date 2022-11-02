@@ -1,2 +1,0 @@
-1d0
-< cgen.exe: /home/faculty/uh/private/quadreader-uh/quadreader.cpp:94: void setupcontrolflow(): Assertion `tblk && "setupcontrolflow cannot locate target block"' failed.

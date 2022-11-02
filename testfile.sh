@@ -1,16 +1,18 @@
 testfile=$1
 
-if [[ -z "$testfile" ]]; then
-  testfile="mytest.c"
+if [[ -z $testfile ]]; then
+   testfile=mytest.c
 fi
-
 make
 clear
+./csem-solution/csem.exe < tests/$testfile &> tests/${testfile%.c}.u.out
+./csem < tests/$testfile &> tests/${testfile%.c}.c.out
+diffout=$(diff tests/${testfile%.c}.u.out tests/${testfile%.c}.c.out)
+if [[ -z "$diffout" ]]; then
+  printf "matched\n"
+else
+  printf "$diffout\n\n"
+  ./csem < tests/$testfile  
+fi
 
-./csem-solution/csem.exe < tests/$testfile &> out/${testfile%.c}/u.out
 
-./csem < tests/$testfile &> out/${testfile%.c}/c.out
-
-#diff out/${1%.c}/u.out out/${1%.c}/c.out
-
-./csem < tests/$testfile

@@ -1,0 +1,190 @@
+sem: startloopscope not implemented
+sem: dofor not implemented
+sem: startloopscope not implemented
+sem: dowhile not implemented
+sem: startloopscope not implemented
+sem: dofor not implemented
+func main 1
+localloc i 1 4
+localloc c 1 4
+localloc f 17 1024
+localloc total 1 4
+localloc x 4 8
+localloc y 4 8
+bgnstmt 6
+t1 := local total 3
+t2 := 0
+t3 := t1 =i t2
+bgnstmt 7
+t4 := local i 0
+t5 := 0
+t6 := t4 =i t5
+label L1
+t7 := local i 0
+t8 := @i t7
+t9 := 128
+t10 := t8 <i t9
+bt t10 B1
+br B2
+label L2
+t11 := local i 0
+t12 := 1
+t13 := @i t11
+t14 := t13 +i t12
+t15 := t11 =i t14
+br B3
+label L3
+bgnstmt 7
+t16 := local i 0
+t17 := @i t16
+t18 := local f 2
+t19 := t18 []i t17
+t20 := 0
+t21 := cvf t20
+t22 := t19 =f t21
+br B4
+label L4
+bgnstmt 9
+label L5
+t23 := local c 1
+t24 := global getchar
+t25 := fi t24 0
+t26 := t23 =i t25
+t27 := 1
+t28 := -i t27
+t29 := t26 !=i t28
+bt t29 B5
+br B6
+label L6
+bgnstmt 9
+bgnstmt 10
+t30 := local c 1
+t31 := 127
+t32 := @i t30
+t33 := t32 &i t31
+t34 := t30 =i t33
+bgnstmt 11
+t35 := local c 1
+t36 := @i t35
+t37 := local f 2
+t38 := t37 []i t36
+t39 := 1
+t40 := @i t38
+t41 := t40 +i t39
+t42 := t38 =f t41
+bgnstmt 12
+t43 := local total 3
+t44 := 1
+t45 := @i t43
+t46 := t45 +i t44
+t47 := t43 =i t46
+br B7
+label L7
+bgnstmt 14
+t48 := "letter	count	frequency\n"
+argi t48
+t49 := global printf
+t50 := fi t49 1 t48
+bgnstmt 15
+t51 := local i 0
+t52 := 0
+t53 := t51 =i t52
+label L8
+t54 := local i 0
+t55 := @i t54
+t56 := 128
+t57 := t55 <i t56
+bt t57 B8
+br B9
+label L9
+t58 := local i 0
+t59 := 1
+t60 := @i t58
+t61 := t60 +i t59
+t62 := t58 =i t61
+br B10
+label L10
+bgnstmt 15
+t63 := local i 0
+t64 := @i t63
+t65 := local f 2
+t66 := t65 []i t64
+t67 := @i t66
+t68 := 0
+t69 := t67 !=i t68
+bt t69 B11
+br B12
+label L11
+bgnstmt 16
+bgnstmt 17
+t70 := local i 0
+t71 := @i t70
+t72 := 32
+t73 := t71 <=i t72
+bt t73 B13
+br B14
+label L12
+bgnstmt 17
+t74 := "%d"
+t75 := local i 0
+t76 := @i t75
+argi t74
+argi t76
+t77 := global printf
+t78 := fi t77 2 t74 t76
+br B15
+label L13
+bgnstmt 19
+t79 := "%c"
+t80 := local i 0
+t81 := @i t80
+argi t79
+argi t81
+t82 := global printf
+t83 := fi t82 2 t79 t81
+label L14
+B13=L12
+B14=L13
+B15=L14
+bgnstmt 21
+t84 := local x 4
+t85 := local i 0
+t86 := @i t85
+t87 := local f 2
+t88 := t87 []i t86
+t89 := @i t88
+t90 := cvf t89
+t91 := t84 =f t90
+bgnstmt 22
+t92 := local y 5
+t93 := local total 3
+t94 := @i t93
+t95 := cvf t94
+t96 := t92 =f t95
+bgnstmt 23
+t97 := local x 4
+t98 := local y 5
+t99 := @f t98
+t100 := @f t97
+t101 := t100 /f t99
+t102 := t97 =f t101
+bgnstmt 24
+t103 := "\t%d\t%f\n"
+t104 := local i 0
+t105 := @i t104
+t106 := local f 2
+t107 := t106 []i t105
+t108 := @i t107
+t109 := local x 4
+t110 := @f t109
+argi t103
+argi t108
+argf t110
+t111 := global printf
+t112 := fi t111 3 t103 t108 t110
+label L15
+B11=L11
+B12=L15
+br B16
+label L16
+fend

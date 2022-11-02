@@ -1,22 +1,19 @@
 /*
- * test8 - check to see if set equals works
+ * test20 - check to see nested ifs work
  */
 main()
 {
-   int i, j, k;
-   double a, b, c;
+   int i, j;
 
-   i = 3;
-   j = 5;
-   i += j;       /* integer to integer */
-   printf("i is %d\n", i);
-   a = 10;
-   b = 3;
-   a += b;       /* float to float */
-   printf("a is %f\n", a);
-   i += b;
-   printf("i is %d\n", i);
-   a += i;
-   printf("a is %f\n", a);
+   i = 5;
+   j = 6;
+   if (i < j)
+      if (i > j)
+         printf("i cannot be both greater and less than j\n");
+   if (i > j)
+      if (i < j)
+         printf("i cannot be both greater and less than j\n");
+   if (i < j)
+      if (i == j-1)
+         printf("i is equal to j - 1\n");
 }
-

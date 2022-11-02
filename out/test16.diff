@@ -1,0 +1,17 @@
+0a1,4
+> sem: startloopscope not implemented
+> sem: startloopscope not implemented
+> sem: dowhile not implemented
+> sem: dowhile not implemented
+17a22
+> bgnstmt 9
+30a36
+> bgnstmt 11
+47,49d52
+< B3=L4
+< B4=L5
+< B5=L3
+58,60d60
+< B1=L2
+< B2=L6
+< B6=L1

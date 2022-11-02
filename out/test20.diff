@@ -1,0 +1,64 @@
+21c21
+< bgnstmt 11
+---
+> bgnstmt 10
+30c30
+< bgnstmt 12
+---
+> bgnstmt 11
+37a38
+> label L4
+39c40
+< B2=L3
+---
+> B2=L4
+48,49c49,50
+< label L4
+< bgnstmt 14
+---
+> label L5
+> bgnstmt 13
+57,58c58,59
+< label L5
+< bgnstmt 15
+---
+> label L6
+> bgnstmt 14
+63,67c64,69
+< label L6
+< B7=L5
+< B8=L6
+< B5=L4
+< B6=L6
+---
+> label L7
+> B7=L6
+> B8=L7
+> label L8
+> B5=L5
+> B6=L8
+76,77c78,79
+< label L7
+< bgnstmt 17
+---
+> label L9
+> bgnstmt 16
+87,88c89,90
+< label L8
+< bgnstmt 18
+---
+> label L10
+> bgnstmt 17
+93,97c95,100
+< label L9
+< B11=L8
+< B12=L9
+< B9=L7
+< B10=L9
+---
+> label L11
+> B11=L10
+> B12=L11
+> label L12
+> B9=L9
+> B10=L12

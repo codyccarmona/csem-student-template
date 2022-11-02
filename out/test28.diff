@@ -1,0 +1,92 @@
+0a1,9
+> sem: startloopscope not implemented
+> sem: dobreak not implemented
+> sem: dofor not implemented
+> sem: startloopscope not implemented
+> sem: dobreak not implemented
+> sem: dowhile not implemented
+> sem: startloopscope not implemented
+> sem: dobreak not implemented
+> sem: dodo not implemented
+23c32
+< bgnstmt 7
+---
+> bgnstmt 6
+31,32c40
+< bgnstmt 8
+< br B6
+---
+> bgnstmt 7
+36c44
+< br B7
+---
+> br B6
+38,42d45
+< B1=L3
+< B2=L6
+< B3=L1
+< B7=L2
+< B6=L6
+61,62c64,65
+< bt t29 B8
+< br B9
+---
+> bt t29 B7
+> br B8
+63a67
+> bgnstmt 11
+69,70c73,74
+< bt t33 B10
+< br B11
+---
+> bt t33 B9
+> br B10
+72,73c76
+< bgnstmt 13
+< br B12
+---
+> bgnstmt 12
+75,76c78,79
+< B10=L9
+< B11=L10
+---
+> B9=L9
+> B10=L10
+84c87
+< br B13
+---
+> br B11
+86,89d88
+< B8=L8
+< B9=L11
+< B13=L7
+< B12=L11
+103a103
+> bgnstmt 18
+109,110c109,110
+< bt t51 B14
+< br B15
+---
+> bt t51 B12
+> br B13
+112,113c112
+< bgnstmt 20
+< br B16
+---
+> bgnstmt 19
+115,116c114,115
+< B14=L13
+< B15=L14
+---
+> B12=L13
+> B13=L14
+129,130c128,129
+< bt t61 B17
+< br B18
+---
+> bt t61 B14
+> br B15
+132,134d130
+< B17=L12
+< B18=L16
+< B16=L16
