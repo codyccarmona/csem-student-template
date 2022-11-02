@@ -2,27 +2,27 @@ Below is the order in which I recommend you implement the semantic
 routines in the sem.c file.
 
 
-fname
-fhead
-ftail
-bgnstmt
-id
-string
-op1
-exprs
-call
-m
+--fname
+--fhead
+--ftail
+--bgnstmt
+--id
+--string
+--op1
+--exprs
+--call
+--m
 -------------- enough to get through the second example
 
-con
-doret
-set
-op2
-index
-ccexpr
-rel
-n
-backpatch
+--con
+--doret
+--set
+--op2
+--index
+--ccexpr
+--rel
+--n
+babashckpatch
 doif
 dofor
 -------------- enough to get through the first example

@@ -1,0 +1,12 @@
+30,31c30,31
+<   %t20 = load double, double* %a, align 8
+<   %1 = fneg double %t20
+---
+>   %t21 = load double, double* %a, align 8
+>   %1 = fneg double %t21
+33,34c33,34
+<   %t25 = load double, double* %b, align 8
+<   %t27 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @1, i32 0, i32 0), double %t25)
+---
+>   %t26 = load double, double* %b, align 8
+>   %t28 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @1, i32 0, i32 0), double %t26)

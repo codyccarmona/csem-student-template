@@ -1,0 +1,87 @@
+sem: labeldcl not implemented
+sem: dogoto not implemented
+sem: dogoto not implemented
+sem: dogoto not implemented
+sem: dogoto not implemented
+sem: labeldcl not implemented
+func main 1
+localloc i 1 4
+localloc sum 1 4
+bgnstmt 6
+t1 := local sum 1
+t2 := 0
+t3 := t1 =i t2
+bgnstmt 7
+t4 := local i 0
+t5 := 0
+t6 := t4 =i t5
+bgnstmt 8
+t7 := local i 0
+t8 := local i 0
+t9 := @i t8
+t10 := 1
+t11 := t9 +i t10
+t12 := t7 =i t11
+bgnstmt 10
+t13 := local i 0
+t14 := @i t13
+t15 := 100
+t16 := t14 >=i t15
+bt t16 B1
+br B2
+label L1
+bgnstmt 10
+label L2
+B16=L1
+B1=L1
+B16=L1
+B2=L1
+bgnstmt 12
+t17 := local sum 1
+t18 := @i t17
+t19 := 200
+t20 := t18 <=i t19
+bt t20 B3
+br B4
+label L3
+bgnstmt 12
+label L4
+B20=L3
+B3=L3
+B20=L3
+B4=L3
+bgnstmt 14
+t21 := local sum 1
+t22 := @i t21
+t23 := 50
+t24 := t22 ==i t23
+bt t24 B5
+br B6
+label L5
+bgnstmt 14
+label L6
+B24=L5
+B5=L5
+B24=L5
+B6=L5
+bgnstmt 16
+t25 := local sum 1
+t26 := local sum 1
+t27 := @i t26
+t28 := local i 0
+t29 := @i t28
+t30 := t27 +i t29
+t31 := t25 =i t30
+bgnstmt 17
+bgnstmt 18
+t32 := "i = %d, sum = %d\n"
+t33 := local i 0
+t34 := @i t33
+t35 := local sum 1
+t36 := @i t35
+argi t32
+argi t34
+argi t36
+t37 := global printf
+t38 := fi t37 3 t32 t34 t36
+fend

@@ -1,0 +1,98 @@
+; ModuleID = 'QuadReader'
+source_filename = "QuadReader"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+@0 = private unnamed_addr constant [6 x i8] c"i=%d\0A\00", align 1
+@1 = private unnamed_addr constant [6 x i8] c"i=%d\0A\00", align 1
+@2 = private unnamed_addr constant [6 x i8] c"i=%d\0A\00", align 1
+
+declare i32 @printf(i8*, ...)
+
+declare void @exit(i32)
+
+declare i32 @getchar()
+
+define i32 @main() {
+entry:
+  %i = alloca i32, align 4
+  store i32 0, i32* %i, align 4
+  br label %L1
+
+L1:                                               ; preds = %L2, %entry
+  %t5 = load i32, i32* %i, align 4
+  %t7 = icmp slt i32 %t5, 100
+  br i1 %t7, label %L3, label %L6
+
+L3:                                               ; preds = %L1
+  %t15 = load i32, i32* %i, align 4
+  %t17 = icmp eq i32 %t15, 50
+  br i1 %t17, label %L4, label %L5
+
+L6:                                               ; preds = %L4, %L1
+  %t20 = load i32, i32* %i, align 4
+  %t22 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @0, i32 0, i32 0), i32 %t20)
+  store i32 0, i32* %i, align 4
+  br label %L7
+
+L2:                                               ; preds = %L5
+  %t10 = load i32, i32* %i, align 4
+  %0 = add i32 %t10, 1
+  store i32 %0, i32* %i, align 4
+  br label %L1
+
+L4:                                               ; preds = %L3
+  br label %L6
+
+L5:                                               ; preds = %L3
+  br label %L2
+
+L7:                                               ; preds = %L10, %L6
+  %t27 = load i32, i32* %i, align 4
+  %t29 = icmp slt i32 %t27, 100
+  br i1 %t29, label %L8, label %L11
+
+L8:                                               ; preds = %L7
+  %t31 = load i32, i32* %i, align 4
+  %t33 = icmp eq i32 %t31, 50
+  br i1 %t33, label %L9, label %L10
+
+L11:                                              ; preds = %L9, %L7
+  %t42 = load i32, i32* %i, align 4
+  %t44 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @1, i32 0, i32 0), i32 %t42)
+  store i32 0, i32* %i, align 4
+  br label %L12
+
+L9:                                               ; preds = %L8
+  br label %L11
+
+L10:                                              ; preds = %L8
+  %t36 = load i32, i32* %i, align 4
+  %1 = add i32 %t36, 1
+  store i32 %1, i32* %i, align 4
+  br label %L7
+
+L12:                                              ; preds = %L15, %L11
+  %t49 = load i32, i32* %i, align 4
+  %t51 = icmp eq i32 %t49, 50
+  br i1 %t51, label %L13, label %L14
+
+L13:                                              ; preds = %L12
+  br label %L16
+
+L14:                                              ; preds = %L12
+  %t54 = load i32, i32* %i, align 4
+  %2 = add i32 %t54, 1
+  store i32 %2, i32* %i, align 4
+  br label %L15
+
+L16:                                              ; preds = %L15, %L13
+  %t64 = load i32, i32* %i, align 4
+  %t66 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @2, i32 0, i32 0), i32 %t64)
+  ret i32 0
+
+L15:                                              ; preds = %L14
+  %t59 = load i32, i32* %i, align 4
+  %t61 = icmp slt i32 %t59, 100
+  br i1 %t61, label %L12, label %L16
+}

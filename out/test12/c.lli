@@ -1,0 +1,62 @@
+; ModuleID = 'QuadReader'
+source_filename = "QuadReader"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+@0 = private unnamed_addr constant [24 x i8] c"this should be printed\0A\00", align 1
+@1 = private unnamed_addr constant [28 x i8] c"this should not be printed\0A\00", align 1
+@2 = private unnamed_addr constant [28 x i8] c"this should not be printed\0A\00", align 1
+@3 = private unnamed_addr constant [24 x i8] c"this should be printed\0A\00", align 1
+
+declare i32 @printf(i8*, ...)
+
+declare void @exit(i32)
+
+declare i32 @getchar()
+
+define i32 @main() {
+entry:
+  %i = alloca i32, align 4
+  %j = alloca i32, align 4
+  %k = alloca i32, align 4
+  %a = alloca double, align 8
+  %b = alloca double, align 8
+  %c = alloca double, align 8
+  store i32 1, i32* %i, align 4
+  store i32 2, i32* %k, align 4
+  %t8 = load i32, i32* %i, align 4
+  %t10 = load i32, i32* %k, align 4
+  %t11 = icmp slt i32 %t8, %t10
+  br i1 %t11, label %L1, label %L1
+
+L1:                                               ; preds = %entry, %entry
+  %t14 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @0, i32 0, i32 0))
+  br label %L2
+
+L2:                                               ; preds = %L1
+  %t16 = load i32, i32* %k, align 4
+  %t18 = load i32, i32* %i, align 4
+  %t19 = icmp slt i32 %t16, %t18
+  br i1 %t19, label %L3, label %L3
+
+L3:                                               ; preds = %L2, %L2
+  %t22 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([28 x i8], [28 x i8]* @1, i32 0, i32 0))
+  br label %L4
+
+L4:                                               ; preds = %L3
+  %t24 = load i32, i32* %k, align 4
+  %t26 = load i32, i32* %i, align 4
+  %t27 = icmp slt i32 %t24, %t26
+  br i1 %t27, label %L5, label %L6
+
+L5:                                               ; preds = %L4
+  %t30 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([28 x i8], [28 x i8]* @2, i32 0, i32 0))
+  br label %L7
+
+L6:                                               ; preds = %L4
+  %t33 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @3, i32 0, i32 0))
+  br label %L7
+
+L7:                                               ; preds = %L6, %L5
+  ret i32 0
+}

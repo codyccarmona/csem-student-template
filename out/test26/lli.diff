@@ -1,0 +1,79 @@
+6,7d5
+< @0 = private unnamed_addr constant [11 x i8] c"\09%d\09%d\09%d\0A\00", align 1
+< 
+13,87d10
+< 
+< define i32 @main() {
+< entry:
+<   %c = alloca i32, align 4
+<   %nw = alloca i32, align 4
+<   %nl = alloca i32, align 4
+<   %nc = alloca i32, align 4
+<   %inword = alloca i32, align 4
+<   store i32 0, i32* %nc, align 4
+<   store i32 0, i32* %nw, align 4
+<   store i32 0, i32* %nl, align 4
+<   store i32 0, i32* %inword, align 4
+<   br label %L1
+< 
+< L1:                                               ; preds = %L10, %entry
+<   %t13 = call i32 @getchar()
+<   store i32 %t13, i32* %c, align 4
+<   %t17 = icmp ne i32 %t13, -1
+<   br i1 %t17, label %L2, label %L11
+< 
+< L2:                                               ; preds = %L1
+<   %t20 = load i32, i32* %nc, align 4
+<   %0 = add i32 %t20, 1
+<   store i32 %0, i32* %nc, align 4
+<   %t24 = load i32, i32* %c, align 4
+<   %t26 = icmp eq i32 %t24, 10
+<   br i1 %t26, label %L3, label %L4
+< 
+< L11:                                              ; preds = %L1
+<   %t61 = load i32, i32* %nl, align 4
+<   %t63 = load i32, i32* %nw, align 4
+<   %t65 = load i32, i32* %nc, align 4
+<   %t67 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([11 x i8], [11 x i8]* @0, i32 0, i32 0), i32 %t61, i32 %t63, i32 %t65)
+<   ret i32 0
+< 
+< L3:                                               ; preds = %L2
+<   %t29 = load i32, i32* %nl, align 4
+<   %1 = add i32 %t29, 1
+<   store i32 %1, i32* %nl, align 4
+<   br label %L4
+< 
+< L4:                                               ; preds = %L3, %L2
+<   %t33 = load i32, i32* %c, align 4
+<   %t35 = icmp eq i32 %t33, 32
+<   br i1 %t35, label %L7, label %L5
+< 
+< L7:                                               ; preds = %L6, %L5, %L4
+<   store i32 0, i32* %inword, align 4
+<   br label %L10
+< 
+< L5:                                               ; preds = %L4
+<   %t37 = load i32, i32* %c, align 4
+<   %t39 = icmp eq i32 %t37, 10
+<   br i1 %t39, label %L7, label %L6
+< 
+< L6:                                               ; preds = %L5
+<   %t41 = load i32, i32* %c, align 4
+<   %t43 = icmp eq i32 %t41, 9
+<   br i1 %t43, label %L7, label %L8
+< 
+< L8:                                               ; preds = %L6
+<   %t48 = load i32, i32* %inword, align 4
+<   %t50 = icmp eq i32 %t48, 0
+<   br i1 %t50, label %L9, label %L10
+< 
+< L10:                                              ; preds = %L9, %L8, %L7
+<   br label %L1
+< 
+< L9:                                               ; preds = %L8
+<   store i32 1, i32* %inword, align 4
+<   %t56 = load i32, i32* %nw, align 4
+<   %2 = add i32 %t56, 1
+<   store i32 %2, i32* %nw, align 4
+<   br label %L10
+< }

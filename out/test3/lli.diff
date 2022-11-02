@@ -1,0 +1,8 @@
+34,36c34,36
+<   %t19 = load i32, i32* %i, align 4
+<   %t21 = load double, double* %f, align 8
+<   %t23 = call i32 @test3(i32 %t19, double %t21)
+---
+>   %t20 = load i32, i32* %i, align 4
+>   %t22 = load double, double* %f, align 8
+>   %t24 = call i32 @test3(i32 %t20, double %t22)

@@ -1,0 +1,49 @@
+; ModuleID = 'QuadReader'
+source_filename = "QuadReader"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+@0 = private unnamed_addr constant [9 x i8] c"x is %d\0A\00", align 1
+@1 = private unnamed_addr constant [9 x i8] c"z is %d\0A\00", align 1
+@2 = private unnamed_addr constant [9 x i8] c"y is %f\0A\00", align 1
+
+declare i32 @printf(i8*, ...)
+
+declare void @exit(i32)
+
+declare i32 @getchar()
+
+define i32 @test5(i32 %x, double %y, i32 %z) {
+entry:
+  %x1 = alloca i32, align 4
+  store i32 %x, i32* %x1, align 4
+  %y2 = alloca double, align 8
+  store double %y, double* %y2, align 8
+  %z3 = alloca i32, align 4
+  store i32 %z, i32* %z3, align 4
+  %t3 = load i32, i32* %x1, align 4
+  %t5 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @0, i32 0, i32 0), i32 %t3)
+  %t8 = load i32, i32* %z3, align 4
+  %t10 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @1, i32 0, i32 0), i32 %t8)
+  %t13 = load double, double* %y2, align 8
+  %t15 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @2, i32 0, i32 0), double %t13)
+  ret i32 0
+}
+
+define i32 @main() {
+entry:
+  %i = alloca i32, align 4
+  %j = alloca i32, align 4
+  %k = alloca i32, align 4
+  %a = alloca double, align 8
+  %b = alloca double, align 8
+  %c = alloca double, align 8
+  store i32 3, i32* %i, align 4
+  store double 5.000000e+00, double* %b, align 8
+  store i32 100, i32* %k, align 4
+  %t27 = load i32, i32* %i, align 4
+  %t29 = load double, double* %b, align 8
+  %t31 = load i32, i32* %k, align 4
+  %t33 = call i32 @test5(i32 %t27, double %t29, i32 %t31)
+  ret i32 0
+}

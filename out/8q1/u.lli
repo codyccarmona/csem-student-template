@@ -1,0 +1,1 @@
+cgen.exe: /home/faculty/uh/private/quadreader-uh/bitcodegen.cpp:298: void createGlobalRef(quadline*): Assertion `id_ptr && "Missing global identifier"' failed.

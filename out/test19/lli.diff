@@ -1,0 +1,12 @@
+43,47c43,47
+<   %t26 = load double, double* %x, align 8
+<   %t28 = call double @func2(double %t26)
+<   store double %t28, double* %y, align 8
+<   %t32 = load double, double* %y, align 8
+<   %t34 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @1, i32 0, i32 0), double %t32)
+---
+>   %t27 = load double, double* %x, align 8
+>   %t29 = call double @func2(double %t27)
+>   store double %t29, double* %y, align 8
+>   %t35 = load double, double* %y, align 8
+>   %t37 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @1, i32 0, i32 0), double %t35)

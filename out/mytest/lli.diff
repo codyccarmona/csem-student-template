@@ -1,0 +1,43 @@
+35,37c35,37
+<   %t28 = load double, double* %b, align 8
+<   %t29 = load double, double* %a, align 8
+<   %1 = fadd double %t29, %t28
+---
+>   %t30 = load double, double* %b, align 8
+>   %t31 = load double, double* %a, align 8
+>   %1 = fadd double %t31, %t30
+39,55c39,54
+<   %t34 = load double, double* %a, align 8
+<   %t36 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @1, i32 0, i32 0), double %t34)
+<   %t39 = load double, double* %b, align 8
+<   %t40 = load i32, i32* %i, align 4
+<   %2 = sitofp i32 %t40 to double
+<   %3 = fadd double %2, %t39
+<   %4 = fptosi double %3 to i32
+<   store i32 %4, i32* %i, align 4
+<   %t47 = load i32, i32* %i, align 4
+<   %t49 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @2, i32 0, i32 0), i32 %t47)
+<   %t52 = load i32, i32* %i, align 4
+<   %t53 = load double, double* %a, align 8
+<   %5 = sitofp i32 %t52 to double
+<   %6 = fadd double %t53, %5
+<   store double %6, double* %a, align 8
+<   %t59 = load double, double* %a, align 8
+<   %t61 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @3, i32 0, i32 0), double %t59)
+---
+>   %t36 = load double, double* %a, align 8
+>   %t38 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @1, i32 0, i32 0), double %t36)
+>   %t41 = load double, double* %b, align 8
+>   %t42 = load i32, i32* %i, align 4
+>   %2 = sitofp i32 %t42 to double
+>   %3 = fadd double %2, %t41
+>   store double %3, i32* %i, align 8
+>   %t48 = load i32, i32* %i, align 4
+>   %t50 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @2, i32 0, i32 0), i32 %t48)
+>   %t53 = load i32, i32* %i, align 4
+>   %t54 = load double, double* %a, align 8
+>   %4 = sitofp i32 %t53 to double
+>   %5 = fadd double %t54, %4
+>   store double %5, double* %a, align 8
+>   %t60 = load double, double* %a, align 8
+>   %t62 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @3, i32 0, i32 0), double %t60)

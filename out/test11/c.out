@@ -1,0 +1,46 @@
+func main 1
+localloc i 1 4
+localloc j 1 4
+localloc k 1 4
+localloc a 4 8
+localloc b 4 8
+localloc c 4 8
+bgnstmt 9
+t1 := local j 1
+t2 := 5
+t3 := t1 =i t2
+bgnstmt 10
+t4 := local i 0
+t5 := local j 1
+t6 := @i t5
+t7 := -i t6
+t8 := t4 =i t7
+bgnstmt 11
+t9 := "i is %d\n"
+t10 := local i 0
+t11 := @i t10
+argi t9
+argi t11
+t12 := global printf
+t13 := fi t12 2 t9 t11
+bgnstmt 12
+t14 := local a 3
+t15 := 11
+t16 := cvf t15
+t17 := cvf t16
+t18 := t14 =f t17
+bgnstmt 13
+t19 := local b 4
+t20 := local a 3
+t21 := @f t20
+t22 := -f t21
+t23 := t19 =f t22
+bgnstmt 14
+t24 := "b is %f\n"
+t25 := local b 4
+t26 := @f t25
+argi t24
+argf t26
+t27 := global printf
+t28 := fi t27 2 t24 t26
+fend
