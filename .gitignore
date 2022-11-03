@@ -10,5 +10,5 @@ out/
 tests/
 csem-solution/
 csem
-
+.vscode/
 tests/mytest.c.out
