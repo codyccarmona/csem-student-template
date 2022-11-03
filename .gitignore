@@ -11,3 +11,4 @@ tests/
 csem-solution/
 csem
 
+tests/mytest.c.out
