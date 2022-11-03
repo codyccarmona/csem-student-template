@@ -9,4 +9,5 @@ cmake-build-debug
 out/
 tests/
 csem-solution/
+csem
 
