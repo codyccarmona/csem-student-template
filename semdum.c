@@ -17,6 +17,7 @@ extern char localnames[MAXLINES][MAXLINES];     /* names of local variables   */
 extern int  localwidths[MAXLINES];              /* widths of local variables  */
 int labelnum = 0;
 int branchnum = 0;
+int branches[MAXLINES];
 
 int currbranch(){
    return branchnum;
@@ -32,7 +33,10 @@ int nextbranch(){
  */
 void backpatch(struct sem_rec *p, int k)
 {
-   fprintf(stderr, "sem: backpatch not implemented\n");
+   while(p){
+      printf("B%d=L%d\n", p->s_place, k);
+      p = p->back.s_link;
+   }
 }
 
 /*
@@ -40,9 +44,17 @@ void backpatch(struct sem_rec *p, int k)
  */
 void bgnstmt()
 {
-   //fprintf(stderr, "sem: bgnstmt not implemented\n");
    extern int lineno;
-   printf("bgnstmt %d\n", lineno);
+   static int lastline = 0;
+   char c = getchar();
+   ungetc(c, stdin);
+   if(lineno != lastline){
+      printf("bgnstmt %d\n", lineno);
+      lastline = lineno;
+   }
+   else if(c == '\n'){
+      printf("bgnstmt %d\n", ++lastline);
+   }
 }
 
 /*
@@ -78,6 +90,7 @@ struct sem_rec *call(char *f, struct sem_rec *args)
       printf("t%d := f%c t%d %d\n", callnum, type, globnum, argcount);
    else
       printf("t%d := f%c t%d %d%s\n", callnum, type, globnum, argcount, quadbuf);
+      
    return (node(callnum, mode, NULL, NULL));
 }
 
@@ -95,7 +108,6 @@ struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
  */
 struct sem_rec *ccexpr(struct sem_rec *e)
 {
-   //struct sem_rec *r =
    return (rel("!=", e, (con("0"))));
    //fprintf(stderr, "sem: ccexpr not implemented\n");
    //return ((struct sem_rec *) NULL);
@@ -124,19 +136,9 @@ struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2)
  */
 struct sem_rec *con(char *x)
 {  
-   struct id_entry *p;
    int quadnum = nexttemp();
-
-   if((p = lookup(x, 0)) == NULL){
-      p = install(x, 0);
-      p->i_type = T_INT;
-      p->i_scope = GLOBAL;
-      p->i_defined = 1;
-      p->i_width = 4;
-   }
-
    printf("t%d := %s\n", quadnum, x);
-   return (node(quadnum, p->i_type, NULL, NULL));
+   return (node(quadnum, T_INT, NULL, NULL));
 }
 
 /*
@@ -185,15 +187,22 @@ void dogoto(char *id)
  */
 void doif(struct sem_rec *e, int m1, int m2)
 {
-   struct sem_rec *r = e;
-
-   for( ; r->back.s_link; r = r->back.s_link){
-      printf("B%d=L%d\n", r->back.s_link->s_place, m1);
-      printf("B%d=L%d\n", r->s_false->s_place, m2);
+   /*
+   int curr = currbranch();
+   for( ; curr > 0; ){
+      int snum = curr--, fnum = curr--;
+      if(branches[fnum] == 0){
+         printf("B%d=L%d\n", fnum, m1);
+         branches[fnum] = 1;
+      }
+      if(branches[snum] == 0){
+         printf("B%d=L%d\n", snum, m2);
+         branches[snum] = 1;
+      }
    }
-
-   printf("B%d=L%d\n", r->s_place, m1);
-   printf("B%d=L%d\n", r->s_false->s_place, m2);
+   */
+  backpatch(e, m1);
+  backpatch(e->s_false, m2);
 }
 
 /*
@@ -336,9 +345,7 @@ struct sem_rec *sindex(struct sem_rec *x, struct sem_rec *i)
       i = op1("cv", i);
    char type = tsize(i->s_mode) == 8 ? 'f' : 'i';;
    printf("t%d := t%d []%c t%d\n", nexttemp(), x->s_place, type, i->s_place);
-   return (node((currtemp()), x->s_mode, NULL, NULL));
-   //fprintf(stderr, "sem: sindex not implemented\n");
-   //return ((struct sem_rec *) NULL);
+   return (node((currtemp()), x->s_mode, x->back.s_link, x->s_false));
 }
 
 /*
@@ -355,8 +362,6 @@ void labeldcl(char *id)
  */
 int m()
 {
-   //fprintf(stderr, "sem: m not implemented\n");
-   //return (0);
    printf("label L%d\n", ++labelnum);
    return labelnum;
 }
@@ -366,9 +371,11 @@ int m()
  */
 struct sem_rec *n()
 {
-   int quadnum = nextbranch();
-   printf("br B%d\n", quadnum);
-   return (node(quadnum, T_LBL, NULL, NULL));
+   //int quadnum = nextbranch();
+   //printf("br B%d\n", quadnum);
+   //return (node(quadnum, T_LBL, NULL, NULL));
+   fprintf(stderr, "sem: n not implemented\n");
+   return (0);
 }
 
 /*
@@ -403,7 +410,7 @@ struct sem_rec *op1(char *op, struct sem_rec *y)
    
 
    printf("t%d := %s%c t%d\n", quadnum, op, type, y->s_place);
-   return (node(quadnum, y->s_mode, NULL, NULL));
+   return (node(quadnum, y->s_mode, y->back.s_link, y->s_false));
 }
 
 /*
@@ -417,11 +424,9 @@ struct sem_rec *op2(char *op, struct sem_rec *x, struct sem_rec *y)
    if(y->s_mode == T_DOUBLE && x->s_mode != T_DOUBLE){
       x = op1("cv", x);
    }
-
-   int quadnum = nexttemp();
    char type = (x->s_mode == T_DOUBLE) ? 'f' : 'i';
-   printf("t%d := t%d %s%c t%d\n", quadnum, x->s_place, op, type, y->s_place);
-   return (node(quadnum, x->s_mode, NULL, NULL));
+   printf("t%d := t%d %s%c t%d\n", nexttemp(), x->s_place, op, type, y->s_place);
+   return (node(currtemp(), x->s_mode, NULL, NULL));
 }
 
 /*
@@ -439,13 +444,10 @@ struct sem_rec *opb(char *op, struct sem_rec *x, struct sem_rec *y)
 struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
 {
    struct sem_rec *r = op2(op, x, y);
-   r->back.s_link = node(nextbranch(), T_LBL, NULL, NULL);
-   r->s_false = node(nextbranch(), T_LBL, NULL, NULL);
-   printf("bt t%d B%d\n", r->s_place, r->back.s_link->s_place);
-   printf("br B%d\n", r->s_false->s_place);
-   return r;
-   //fprintf(stderr, "sem: rel not implemented\n");
-   //return ((struct sem_rec *) NULL);
+   int btnum = nextbranch(), brnum = nextbranch();
+   printf("bt t%d B%d\n", r->s_place, btnum);
+   printf("br B%d\n", brnum);
+   return (node(btnum, T_LBL, NULL, (node(brnum, T_LBL, NULL, NULL))));
 }
 
 /*
@@ -455,7 +457,6 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
 {
    struct sem_rec *r;
    char type = tsize(x->s_mode & ~T_ADDR) == 4 ? 'i' : 'f';
-
    if(*op == '\000'){
       if( (x->s_mode & ~T_ADDR) != y->s_mode){
          y = op1("cv", y);
@@ -469,7 +470,7 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
       }
    }
    printf("t%d := t%d =%c t%d\n", nexttemp(), x->s_place, type, r->s_place);
-   return (node(currtemp(), x->s_mode, NULL, NULL));
+   return (node(currtemp(), x->s_mode, y->back.s_link, y->s_false));
 }
 
 /*
@@ -486,7 +487,6 @@ void startloopscope()
  */
 struct sem_rec *string(char *s)
 {
-   int quadnum = nexttemp();
-   printf("t%d := %s\n", quadnum, s);
-   return (node(quadnum, T_STR|T_ADDR, NULL, NULL));
+   printf("t%d := %s\n", nexttemp(), s);
+   return (node(currtemp(), T_STR|T_ADDR, NULL, NULL));
 }
