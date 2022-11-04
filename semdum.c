@@ -366,9 +366,17 @@ void labeldcl(char *id)
  */
 int m()
 {
+   static int lastline = 0;
+   extern int lineno;
    char c = getchar();
    ungetc(c, stdin);
-   printf("label L%d\n", ++labelnum);
+   if(lastline != lineno){
+      printf("label L%d\n", ++labelnum);
+      lastline = lineno;
+   }
+   else if(c == '\n'){
+      printf("label L%d\n", ++labelnum);
+   }
    return labelnum;
 }
 
