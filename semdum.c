@@ -130,9 +130,8 @@ struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2)
  */
 struct sem_rec *con(char *x)
 {  
-   int quadnum = nexttemp();
-   printf("t%d := %s\n", quadnum, x);
-   return (node(quadnum, T_INT, NULL, NULL));
+   printf("t%d := %s\n", nexttemp(), x);
+   return (node(currtemp(), T_INT, NULL, NULL));
 }
 
 /*
@@ -165,7 +164,11 @@ void dodo(int m1, int m2, struct sem_rec *e, int m3)
 void dofor(int m1, struct sem_rec *e2, int m2, struct sem_rec *n1,
            int m3, struct sem_rec *n2, int m4)
 {
-   fprintf(stderr, "sem: dofor not implemented\n");
+   backpatch(e2, m3);
+   backpatch(e2->s_false, m4);
+   backpatch(n1, m1);
+   backpatch(n2, m2);
+   //fprintf(stderr, "sem: dofor not implemented\n");
 }
 
 /*
@@ -186,35 +189,6 @@ void doif(struct sem_rec *e, int m1, int m2)
       backpatch(e->s_false, m2);
       e = e->back.s_link;
    }
-   
-
-   /*
-   int currbr = e->s_place;
-   struct id_entry *bt, *btlink;
-
-   bt = lookup("__LONG_MAX__", currbr--);
-
-   while(bt){      
-      struct id_entry *btlink = bt->i_link;
-      
-      if(btlink->i_type == T_LBL && btlink->i_width == 0){
-         printf("B%d=L%d\n", btlink->i_blevel, m1);
-         btlink->i_width = 1;
-      }
-
-      if(bt->i_type == T_LBL && bt->i_width == 0){
-         printf("B%d=L%d\n", bt->i_blevel, m2);
-         bt->i_width = 1;
-      }
-
-      if((btlink->i_blevel - 1) > 0){
-         bt = btlink->i_link;
-      }
-      else{
-         bt = NULL;
-      }      
-   }
-   */
 }
 
 /*
@@ -363,11 +337,17 @@ struct sem_rec *id(char *x)
  */
 struct sem_rec *sindex(struct sem_rec *x, struct sem_rec *i)
 {
+   struct sem_rec *r;
+   char type;
+
    if(i->s_mode != T_INT)
       i = op1("cv", i);
-   char type = tsize(i->s_mode) == 8 ? 'f' : 'i';
-   printf("t%d := t%d []%c t%d\n", nexttemp(), x->s_place, type, i->s_place);
-   return (node((currtemp()), x->s_mode, NULL, NULL));
+
+   r = exprs(x, i);
+   type = tsize(x->s_mode) == 8 ? 'f' : 'i';
+
+   printf("t%d := t%d []%c t%d\n", r->s_place, x->s_place, type, i->s_place);
+   return r;
 }
 
 /*
@@ -386,8 +366,13 @@ int m()
 {
    static int lastline = 0;
    extern int lineno;
+   
+   printf("label L%d\n", ++labelnum);
+   return labelnum;
+
    char c = getchar();
    ungetc(c, stdin);
+
    if(lastline != lineno){
       printf("label L%d\n", ++labelnum);
       lastline = lineno;
@@ -395,6 +380,7 @@ int m()
    else if(c == '\n'){
       printf("label L%d\n", ++labelnum);
    }
+
    return labelnum;
 }
 
@@ -403,11 +389,8 @@ int m()
  */
 struct sem_rec *n()
 {
-   //int quadnum = nextbranch();
-   //printf("br B%d\n", quadnum);
-   //return (node(quadnum, T_LBL, NULL, NULL));
-   fprintf(stderr, "sem: n not implemented\n");
-   return (0);
+   printf("br B%d\n", nextbranch());
+   return (node(currbranch(), T_LBL, NULL, NULL));
 }
 
 /*
@@ -481,20 +464,7 @@ struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
    r = merge(r, y->back.s_link);
 
    printf("bt t%d B%d\n", y->s_place, r->s_place);
-   printf("br B%d\n", r->s_false->s_place);
-/*
-   if((bt = lookup("__LONG_MAX__", nextbranch())) == NULL){
-      bt = install("__LONG_MAX__", currbranch());
-      bt->i_type = T_LBL;
-      bt->i_width = 0;
-   }
-   if((br = lookup("__LONG_MAX__", nextbranch()) == NULL)){
-      br = install("__LONG_MAX__", currbranch());
-      br->i_type = T_LBL;
-      br->i_width = 0;
-   }
-*/
-   
+   printf("br B%d\n", r->s_false->s_place); 
    
    return r;
 }
@@ -506,6 +476,7 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
 {
    char type = tsize(x->s_mode & ~T_ADDR) == 4 ? 'i' : 'f';
    struct sem_rec *r;
+   int xplace = x->s_place;
 
    if(*op == '\000'){
       if( (x->s_mode & ~T_ADDR) != y->s_mode){
@@ -514,13 +485,15 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
       r = exprs(x, y);
    }
    else{
-      r = op2(op, (op1("@", x)), y);
-      if(r->s_mode != (x->s_mode & ~T_ADDR)){
-         r = op1("cv", r);
+      x = op1("@", x);
+      y = op2(op, x, y);
+      if(y->s_mode != (x->s_mode & ~T_ADDR)){
+         y = op1("cv", r);
       }
+      r = exprs(x, y);
    }
    
-   printf("t%d := t%d =%c t%d\n", r->s_place, x->s_place, type, y->s_place);
+   printf("t%d := t%d =%c t%d\n", r->s_place, xplace, type, y->s_place);
 
    return r;
 }
@@ -531,7 +504,8 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
 void startloopscope()
 {
    /* you may assume the maximum number of loops in a loop nest is 50 */
-   fprintf(stderr, "sem: startloopscope not implemented\n");
+   //fprintf(stderr, "sem: startloopscope not implemented\n");
+   enterblock();
 }
 
 /*

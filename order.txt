@@ -22,8 +22,8 @@ routines in the sem.c file.
 --ccexpr
 --rel
 --n
-babashckpatch
-doif
+--babashckpatch
+--doif
 dofor
 -------------- enough to get through the first example
 
