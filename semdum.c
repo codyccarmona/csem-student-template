@@ -5,6 +5,7 @@
 # include "sym.h"
 
 #define MAXLINES 80
+#define DEBUG 0
 
 static char quadbuf[4096];                    
 
@@ -28,11 +29,19 @@ int nextbranch(){
    return branchnum;
 }
 
+void called(char *f){
+   if(DEBUG == 0)
+      return;
+
+   printf("\n==%s called==\n", f);
+}
+
 /*
  * backpatch - backpatch list of quadruples starting at p with k
  */
 void backpatch(struct sem_rec *p, int k)
 {
+   called("backpatch");
    printf("B%d=L%d\n", p->s_place, k);
 }
 
@@ -41,6 +50,7 @@ void backpatch(struct sem_rec *p, int k)
  */
 void bgnstmt()
 {
+   called("bgnstmt");
    extern int lineno;
    static int lastline = 0;
    char c = getchar();
@@ -59,6 +69,7 @@ void bgnstmt()
  */
 struct sem_rec *call(char *f, struct sem_rec *args)
 {
+   called("call");
    int argcount = 0, buflen = 0, globnum = nexttemp(), callnum = nexttemp(), mode = 0;
    char type;
    struct id_entry *p;
@@ -104,6 +115,7 @@ struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
  */
 struct sem_rec *ccexpr(struct sem_rec *e)
 {
+   called("ccexpr");
    return (rel("!=", e, (con("0"))));
 }
 
@@ -164,6 +176,7 @@ void dodo(int m1, int m2, struct sem_rec *e, int m3)
 void dofor(int m1, struct sem_rec *e2, int m2, struct sem_rec *n1,
            int m3, struct sem_rec *n2, int m4)
 {
+   called("dofor");
    backpatch(e2, m3);
    backpatch(e2->s_false, m4);
    backpatch(n1, m1);
@@ -184,7 +197,12 @@ void dogoto(char *id)
  */
 void doif(struct sem_rec *e, int m1, int m2)
 {  
+   called("doif");
    while(e){
+      if(e->s_mode != T_LBL){
+         e = e->back.s_link;
+         continue;
+      }
       backpatch(e, m1);
       backpatch(e->s_false, m2);
       e = e->back.s_link;
@@ -197,11 +215,10 @@ void doif(struct sem_rec *e, int m1, int m2)
 void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
                          int m2, int m3)
 {
-   struct id_entry *brnch = lookup("__LONG_MAX__", e->s_place);
-   printf("B%d=L%d\n", e->back.s_true->s_place, m1);
-   printf("B%d=L%d\n", e->s_false->s_place, m2);
-   printf("B%d=L%d\n", n->s_place, m3);
-   //fprintf(stderr, "sem: doifelse not implemented\n");
+   called("doifelse");
+   backpatch(e, m1);
+   backpatch(e->s_false, m2);
+   backpatch(n, m3);
 }
 
 /*
@@ -236,6 +253,7 @@ void endloopscope(int m)
  */
 struct sem_rec *exprs(struct sem_rec *l, struct sem_rec *e)
 {
+   called("exprs");
    struct sem_rec *r;
 
    if(l->s_place > e->s_place){
@@ -278,6 +296,8 @@ void fhead(struct id_entry *p)
  */
 struct id_entry *fname(int t, char *id)
 {
+   called("fname");
+
    struct id_entry *p;
 
    if((p = lookup(id, 0)) == NULL){
@@ -312,6 +332,8 @@ void ftail()
  */
 struct sem_rec *id(char *x)
 {
+   called("id");
+
    struct id_entry *p;
    int quadnum = nexttemp();
 
@@ -337,6 +359,8 @@ struct sem_rec *id(char *x)
  */
 struct sem_rec *sindex(struct sem_rec *x, struct sem_rec *i)
 {
+   called("sindex");
+
    struct sem_rec *r;
    char type;
 
@@ -400,22 +424,27 @@ struct sem_rec *op1(char *op, struct sem_rec *y)
 {
    char type;
 
+   called("op1");
+
    if(*op == '@'){
       y->s_mode &= ~T_ADDR;
    }
-
-   if(tsize(y->s_mode & ~T_ARRAY) != 0){
-      y->s_mode &= ~T_ARRAY;
-   }
    
    if(op == "cv"){
-      y->s_mode = (y->s_mode == T_DOUBLE) ? T_INT : T_DOUBLE;
+      if(tsize(y->s_mode) == 0){
+         y->s_mode &= ~T_ARRAY;
+         y->s_mode = (y->s_mode == T_DOUBLE) ? T_INT : T_DOUBLE;
+         y->s_mode |= T_ARRAY;
+      }
+      else{
+         y->s_mode = (y->s_mode == T_DOUBLE) ? T_INT : T_DOUBLE;
+      }
    }
    
    type = y->s_mode == T_DOUBLE ? 'f' : 'i';
    printf("t%d := %s%c t%d\n", nexttemp(), op, type, y->s_place);
 
-   return (node(currtemp(), y->s_mode, y->back.s_link, y->s_false));
+   return (node(currtemp(), y->s_mode, 0, y->s_false));
 }
 
 /*
@@ -423,6 +452,8 @@ struct sem_rec *op1(char *op, struct sem_rec *y)
  */
 struct sem_rec *op2(char *op, struct sem_rec *x, struct sem_rec *y)
 {   
+   called("op2");
+
    char type;
    struct sem_rec *r;
 
@@ -456,6 +487,8 @@ struct sem_rec *opb(char *op, struct sem_rec *x, struct sem_rec *y)
  */
 struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
 {
+   called("rel");
+
    int btnum = nextbranch(), brnum = nextbranch();
    struct sem_rec *r = node(btnum, T_LBL, NULL, (node(brnum, T_LBL, NULL, NULL)));
 
@@ -474,27 +507,38 @@ struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
  */
 struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
 {
-   char type = tsize(x->s_mode & ~T_ADDR) == 4 ? 'i' : 'f';
+   called("set");
+
+   char type;
    struct sem_rec *r;
    int xplace = x->s_place;
+   int mode = x->s_mode;
 
    if(*op == '\000'){
-      if( (x->s_mode & ~T_ADDR) != y->s_mode){
+      if(tsize(mode) == 0)
+         mode &= ~T_ADDR;
+      if(tsize(mode) == 0){
+         mode &= ~T_ARRAY;
+      }
+      if( mode != y->s_mode){
          y = op1("cv", y);
       }
       r = exprs(x, y);
    }
    else{
       x = op1("@", x);
+      mode = x->s_mode;
       y = op2(op, x, y);
-      if(y->s_mode != (x->s_mode & ~T_ADDR)){
+      if(y->s_mode != x->s_mode){
          y = op1("cv", r);
       }
       r = exprs(x, y);
    }
+
+   type = (mode == T_INT) ? 'i' : 'f';
    
    printf("t%d := t%d =%c t%d\n", r->s_place, xplace, type, y->s_place);
-
+   r->s_mode = mode;
    return r;
 }
 
@@ -503,6 +547,7 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
  */
 void startloopscope()
 {
+   called("startloopscope");
    /* you may assume the maximum number of loops in a loop nest is 50 */
    //fprintf(stderr, "sem: startloopscope not implemented\n");
    enterblock();
@@ -513,6 +558,11 @@ void startloopscope()
  */
 struct sem_rec *string(char *s)
 {
+   called("string");
+   struct id_entry *p;
+   if((p = lookup(s, 0)) == NULL){
+      p = install(s, 0);
+   }
    printf("t%d := %s\n", nexttemp(), s);
    return (node(currtemp(), T_STR|T_ADDR, NULL, NULL));
 }
