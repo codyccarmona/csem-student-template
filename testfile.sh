@@ -5,7 +5,14 @@ if [[ -z $testfile ]]; then
 fi
 
 make
-./csem-solution/csem.exe < tests/$testfile &> out/${testfile%.c}.u.out
-./csem < tests/$testfile
+$(./csem-solution/csem.exe < tests/$testfile &> out/${testfile%.c}.u.out)
+$(./csem < tests/$testfile &> out/${testfile%.c}.c.out)
+diffout=$(diff out/${testfile%.c}.c.out out/${testfile%.c}.u.out)
+
+if [[ -z "$diffout" ]]; then
+   echo "matched"
+else
+   ./csem < tests/$testfile
+fi
 
 

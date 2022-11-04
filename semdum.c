@@ -33,10 +33,8 @@ int nextbranch(){
  */
 void backpatch(struct sem_rec *p, int k)
 {
-   while(p){
-      printf("B%d=L%d\n", p->s_place, k);
-      p = p->back.s_link;
-   }
+   char btbuf[10], brbuf[10];
+   int brnchnum = p->s_place;
 }
 
 /*
@@ -109,8 +107,6 @@ struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
 struct sem_rec *ccexpr(struct sem_rec *e)
 {
    return (rel("!=", e, (con("0"))));
-   //fprintf(stderr, "sem: ccexpr not implemented\n");
-   //return ((struct sem_rec *) NULL);
 }
 
 /*
@@ -187,22 +183,31 @@ void dogoto(char *id)
  */
 void doif(struct sem_rec *e, int m1, int m2)
 {
-   /*
-   int curr = currbranch();
-   for( ; curr > 0; ){
-      int snum = curr--, fnum = curr--;
-      if(branches[fnum] == 0){
-         printf("B%d=L%d\n", fnum, m1);
-         branches[fnum] = 1;
+   int currbr = e->s_place;
+   struct id_entry *bt, *btlink;
+
+   bt = lookup("__LONG_MAX__", currbr--);
+
+   while(bt){      
+      struct id_entry *btlink = bt->i_link;
+      
+      if(btlink->i_type == T_LBL && btlink->i_width == 0){
+         printf("B%d=L%d\n", btlink->i_blevel, m1);
+         btlink->i_width = 1;
       }
-      if(branches[snum] == 0){
-         printf("B%d=L%d\n", snum, m2);
-         branches[snum] = 1;
+
+      if(bt->i_type == T_LBL && bt->i_width == 0){
+         printf("B%d=L%d\n", bt->i_blevel, m2);
+         bt->i_width = 1;
       }
+
+      if((btlink->i_blevel - 1) > 0){
+         bt = btlink->i_link;
+      }
+      else{
+         bt = NULL;
+      }      
    }
-   */
-  backpatch(e, m1);
-  backpatch(e->s_false, m2);
 }
 
 /*
@@ -211,6 +216,7 @@ void doif(struct sem_rec *e, int m1, int m2)
 void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
                          int m2, int m3)
 {
+   struct id_entry *brnch = lookup("__LONG_MAX__", e->s_place);
    printf("B%d=L%d\n", e->back.s_true->s_place, m1);
    printf("B%d=L%d\n", e->s_false->s_place, m2);
    printf("B%d=L%d\n", n->s_place, m3);
@@ -250,8 +256,6 @@ void endloopscope(int m)
 struct sem_rec *exprs(struct sem_rec *l, struct sem_rec *e)
 {
    return (merge(l, e));
-   //fprintf(stderr, "sem: exprs not implemented\n");
-   //return ((struct sem_rec *) NULL);
 }
 
 /*
@@ -343,9 +347,9 @@ struct sem_rec *sindex(struct sem_rec *x, struct sem_rec *i)
 {
    if(i->s_mode != T_INT)
       i = op1("cv", i);
-   char type = tsize(i->s_mode) == 8 ? 'f' : 'i';;
+   char type = tsize(i->s_mode) == 8 ? 'f' : 'i';
    printf("t%d := t%d []%c t%d\n", nexttemp(), x->s_place, type, i->s_place);
-   return (node((currtemp()), x->s_mode, x->back.s_link, x->s_false));
+   return (node((currtemp()), x->s_mode, NULL, NULL));
 }
 
 /*
@@ -362,6 +366,8 @@ void labeldcl(char *id)
  */
 int m()
 {
+   char c = getchar();
+   ungetc(c, stdin);
    printf("label L%d\n", ++labelnum);
    return labelnum;
 }
@@ -444,10 +450,23 @@ struct sem_rec *opb(char *op, struct sem_rec *x, struct sem_rec *y)
 struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
 {
    struct sem_rec *r = op2(op, x, y);
-   int btnum = nextbranch(), brnum = nextbranch();
-   printf("bt t%d B%d\n", r->s_place, btnum);
-   printf("br B%d\n", brnum);
-   return (node(btnum, T_LBL, NULL, (node(brnum, T_LBL, NULL, NULL))));
+   struct id_entry *bt, *br;
+
+   if((bt = lookup("__LONG_MAX__", nextbranch())) == NULL){
+      bt = install("__LONG_MAX__", currbranch());
+      bt->i_type = T_LBL;
+      bt->i_width = 0;
+   }
+   if((br = lookup("__LONG_MAX__", nextbranch()) == NULL)){
+      br = install("__LONG_MAX__", currbranch());
+      br->i_type = T_LBL;
+      br->i_width = 0;
+   }
+
+   printf("bt t%d B%d\n", r->s_place, bt->i_blevel);
+   printf("br B%d\n", br->i_blevel);
+
+   return (node(br->i_blevel, T_LBL, NULL, (node(bt->i_blevel, T_LBL, NULL, NULL))));
 }
 
 /*
