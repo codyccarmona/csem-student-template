@@ -33,8 +33,7 @@ int nextbranch(){
  */
 void backpatch(struct sem_rec *p, int k)
 {
-   char btbuf[10], brbuf[10];
-   int brnchnum = p->s_place;
+   printf("B%d=L%d\n", p->s_place, k);
 }
 
 /*
@@ -60,7 +59,7 @@ void bgnstmt()
  */
 struct sem_rec *call(char *f, struct sem_rec *args)
 {
-   int argcount = 0, buflen = 0, globnum = 0, callnum = 0, mode = 0;
+   int argcount = 0, buflen = 0, globnum = nexttemp(), callnum = nexttemp(), mode = 0;
    char type;
    struct id_entry *p;
 
@@ -80,16 +79,15 @@ struct sem_rec *call(char *f, struct sem_rec *args)
    }
 
    type = mode == T_DOUBLE ? 'f' : 'i';
-   globnum = nexttemp();
+
    printf("t%d := global %s\n", globnum, f);
-   callnum = nexttemp();
 
    if(argcount == 0)
       printf("t%d := f%c t%d %d\n", callnum, type, globnum, argcount);
    else
       printf("t%d := f%c t%d %d%s\n", callnum, type, globnum, argcount, quadbuf);
       
-   return (node(callnum, mode, NULL, NULL));
+   return (node(callnum, mode, args->back.s_link, args->s_false));
 }
 
 /*
@@ -182,7 +180,15 @@ void dogoto(char *id)
  * doif - one-arm if statement
  */
 void doif(struct sem_rec *e, int m1, int m2)
-{
+{  
+   while(e){
+      backpatch(e, m1);
+      backpatch(e->s_false, m2);
+      e = e->back.s_link;
+   }
+   
+
+   /*
    int currbr = e->s_place;
    struct id_entry *bt, *btlink;
 
@@ -208,6 +214,7 @@ void doif(struct sem_rec *e, int m1, int m2)
          bt = NULL;
       }      
    }
+   */
 }
 
 /*
@@ -255,7 +262,18 @@ void endloopscope(int m)
  */
 struct sem_rec *exprs(struct sem_rec *l, struct sem_rec *e)
 {
-   return (merge(l, e));
+   struct sem_rec *r;
+
+   if(l->s_place > e->s_place){
+      l = merge(l, e->back.s_link);
+      r = node(nexttemp(), l->s_mode, l->back.s_link, l->s_false);
+   }
+   else{
+      e = merge(e, l->back.s_link);
+      r = node(nexttemp(), e->s_mode, e->back.s_link, e->s_false);
+   }
+
+   return r;
 }
 
 /*
@@ -398,7 +416,6 @@ struct sem_rec *n()
 struct sem_rec *op1(char *op, struct sem_rec *y)
 {
    char type;
-   int quadnum = nexttemp();
 
    if(*op == '@'){
       y->s_mode &= ~T_ADDR;
@@ -409,38 +426,37 @@ struct sem_rec *op1(char *op, struct sem_rec *y)
    }
    
    if(op == "cv"){
-      if(y->s_mode == T_DOUBLE){
-         type = 'i';
-         y->s_mode = T_INT;
-      }
-      else{
-         type = 'f';
-         y->s_mode = T_DOUBLE;
-      }
-   }
-   else{
-      type = tsize(y->s_mode) == 8 ? 'f' : 'i';
+      y->s_mode = (y->s_mode == T_DOUBLE) ? T_INT : T_DOUBLE;
    }
    
+   type = y->s_mode == T_DOUBLE ? 'f' : 'i';
+   printf("t%d := %s%c t%d\n", nexttemp(), op, type, y->s_place);
 
-   printf("t%d := %s%c t%d\n", quadnum, op, type, y->s_place);
-   return (node(quadnum, y->s_mode, y->back.s_link, y->s_false));
+   return (node(currtemp(), y->s_mode, y->back.s_link, y->s_false));
 }
 
 /*
  * op2 - arithmetic operators
  */
 struct sem_rec *op2(char *op, struct sem_rec *x, struct sem_rec *y)
-{
+{   
+   char type;
+   struct sem_rec *r;
+
    if(x->s_mode == T_DOUBLE && y->s_mode != T_DOUBLE){
       y = op1("cv", y);
    }
    if(y->s_mode == T_DOUBLE && x->s_mode != T_DOUBLE){
       x = op1("cv", x);
    }
-   char type = (x->s_mode == T_DOUBLE) ? 'f' : 'i';
-   printf("t%d := t%d %s%c t%d\n", nexttemp(), x->s_place, op, type, y->s_place);
-   return (node(currtemp(), x->s_mode, NULL, NULL));
+   
+   type = (x->s_mode == T_DOUBLE) ? 'f' : 'i';
+
+   r = exprs(x, y);
+
+   printf("t%d := t%d %s%c t%d\n", r->s_place, x->s_place, op, type, y->s_place);
+
+   return r;
 }
 
 /*
@@ -457,9 +473,16 @@ struct sem_rec *opb(char *op, struct sem_rec *x, struct sem_rec *y)
  */
 struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
 {
-   struct sem_rec *r = op2(op, x, y);
-   struct id_entry *bt, *br;
+   int btnum = nextbranch(), brnum = nextbranch();
+   struct sem_rec *r = node(btnum, T_LBL, NULL, (node(brnum, T_LBL, NULL, NULL)));
 
+   y = op2(op, x, y);
+   
+   r = merge(r, y->back.s_link);
+
+   printf("bt t%d B%d\n", y->s_place, r->s_place);
+   printf("br B%d\n", r->s_false->s_place);
+/*
    if((bt = lookup("__LONG_MAX__", nextbranch())) == NULL){
       bt = install("__LONG_MAX__", currbranch());
       bt->i_type = T_LBL;
@@ -470,11 +493,10 @@ struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
       br->i_type = T_LBL;
       br->i_width = 0;
    }
-
-   printf("bt t%d B%d\n", r->s_place, bt->i_blevel);
-   printf("br B%d\n", br->i_blevel);
-
-   return (node(br->i_blevel, T_LBL, NULL, (node(bt->i_blevel, T_LBL, NULL, NULL))));
+*/
+   
+   
+   return r;
 }
 
 /*
@@ -482,13 +504,14 @@ struct sem_rec *rel(char *op, struct sem_rec *x, struct sem_rec *y)
  */
 struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
 {
-   struct sem_rec *r;
    char type = tsize(x->s_mode & ~T_ADDR) == 4 ? 'i' : 'f';
+   struct sem_rec *r;
+
    if(*op == '\000'){
       if( (x->s_mode & ~T_ADDR) != y->s_mode){
          y = op1("cv", y);
       }
-      r = y;
+      r = exprs(x, y);
    }
    else{
       r = op2(op, (op1("@", x)), y);
@@ -496,8 +519,10 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
          r = op1("cv", r);
       }
    }
-   printf("t%d := t%d =%c t%d\n", nexttemp(), x->s_place, type, r->s_place);
-   return (node(currtemp(), x->s_mode, y->back.s_link, y->s_false));
+   
+   printf("t%d := t%d =%c t%d\n", r->s_place, x->s_place, type, y->s_place);
+
+   return r;
 }
 
 /*
