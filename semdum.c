@@ -142,6 +142,7 @@ struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2)
  */
 struct sem_rec *con(char *x)
 {  
+   called("con");
    printf("t%d := %s\n", nexttemp(), x);
    return (node(currtemp(), T_INT, NULL, NULL));
 }
@@ -254,18 +255,7 @@ void endloopscope(int m)
 struct sem_rec *exprs(struct sem_rec *l, struct sem_rec *e)
 {
    called("exprs");
-   struct sem_rec *r;
-
-   if(l->s_place > e->s_place){
-      l = merge(l, e->back.s_link);
-      r = node(nexttemp(), l->s_mode, l->back.s_link, l->s_false);
-   }
-   else{
-      e = merge(e, l->back.s_link);
-      r = node(nexttemp(), e->s_mode, e->back.s_link, e->s_false);
-   }
-
-   return r;
+   return (merge(l, e));
 }
 
 /*
@@ -361,17 +351,16 @@ struct sem_rec *sindex(struct sem_rec *x, struct sem_rec *i)
 {
    called("sindex");
 
-   struct sem_rec *r;
    char type;
 
    if(i->s_mode != T_INT)
       i = op1("cv", i);
 
-   r = exprs(x, i);
    type = tsize(x->s_mode) == 8 ? 'f' : 'i';
 
-   printf("t%d := t%d []%c t%d\n", r->s_place, x->s_place, type, i->s_place);
-   return r;
+   printf("t%d := t%d []%c t%d\n", nexttemp(), x->s_place, type, i->s_place);
+
+   return ((node(currtemp(), x->s_mode, 0, 0)));
 }
 
 /*
@@ -421,9 +410,7 @@ struct sem_rec *n()
  * op1 - unary operators
  */
 struct sem_rec *op1(char *op, struct sem_rec *y)
-{
-   char type;
-
+{   
    called("op1");
 
    if(*op == '@'){
@@ -441,10 +428,10 @@ struct sem_rec *op1(char *op, struct sem_rec *y)
       }
    }
    
-   type = y->s_mode == T_DOUBLE ? 'f' : 'i';
+   char type = y->s_mode == T_DOUBLE ? 'f' : 'i';
    printf("t%d := %s%c t%d\n", nexttemp(), op, type, y->s_place);
 
-   return (node(currtemp(), y->s_mode, 0, y->s_false));
+   return (node(currtemp(), y->s_mode, 0, 0));
 }
 
 /*
@@ -455,7 +442,6 @@ struct sem_rec *op2(char *op, struct sem_rec *x, struct sem_rec *y)
    called("op2");
 
    char type;
-   struct sem_rec *r;
 
    if(x->s_mode == T_DOUBLE && y->s_mode != T_DOUBLE){
       y = op1("cv", y);
@@ -466,11 +452,9 @@ struct sem_rec *op2(char *op, struct sem_rec *x, struct sem_rec *y)
    
    type = (x->s_mode == T_DOUBLE) ? 'f' : 'i';
 
-   r = exprs(x, y);
+   printf("t%d := t%d %s%c t%d\n", nexttemp(), x->s_place, op, type, y->s_place);
 
-   printf("t%d := t%d %s%c t%d\n", r->s_place, x->s_place, op, type, y->s_place);
-
-   return r;
+   return (node(currtemp(), x->s_mode, 0, 0));
 }
 
 /*
@@ -510,36 +494,34 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
    called("set");
 
    char type;
-   struct sem_rec *r;
-   int xplace = x->s_place;
+   int tempsetnum = x->s_place;
    int mode = x->s_mode;
 
    if(*op == '\000'){
       if(tsize(mode) == 0)
          mode &= ~T_ADDR;
-      if(tsize(mode) == 0){
+
+      if(tsize(mode) == 0)
          mode &= ~T_ARRAY;
-      }
+      
       if( mode != y->s_mode){
          y = op1("cv", y);
       }
-      r = exprs(x, y);
    }
    else{
       x = op1("@", x);
       mode = x->s_mode;
       y = op2(op, x, y);
-      if(y->s_mode != x->s_mode){
-         y = op1("cv", r);
-      }
-      r = exprs(x, y);
+
+      if(y->s_mode != mode)
+         y = op1("cv", y);
    }
 
    type = (mode == T_INT) ? 'i' : 'f';
    
-   printf("t%d := t%d =%c t%d\n", r->s_place, xplace, type, y->s_place);
-   r->s_mode = mode;
-   return r;
+   printf("t%d := t%d =%c t%d\n", nexttemp(), tempsetnum, type, y->s_place);
+   
+   return (node(currtemp(), mode, 0, 0));
 }
 
 /*
@@ -559,10 +541,6 @@ void startloopscope()
 struct sem_rec *string(char *s)
 {
    called("string");
-   struct id_entry *p;
-   if((p = lookup(s, 0)) == NULL){
-      p = install(s, 0);
-   }
    printf("t%d := %s\n", nexttemp(), s);
    return (node(currtemp(), T_STR|T_ADDR, NULL, NULL));
 }

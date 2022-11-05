@@ -1,32 +1,21 @@
-int m[6];
-
-scale(int x) {
-   int i;
-
-   if (x == 0)
-      return 0;
-   for (i = 0; i < 6; i += 1)
-      m[i] *= x;
-   return 1;
-}
-
+/*
+ * test8 - check to see if set equals works
+ */
 main()
 {
-   int i;
-   int z;
-   m[0] = 0;
-   m[1] = 1;
-   m[2] = 2;
-   m[3] = 3;
-   m[4] = 4;
-   m[5] = 5;
-   z = 10;
-   if (scale(z))
-      for (i = 0; i < 6; i += 1) {
-         printf("m[%d]", i);
-         printf(" = %d\n", m[i]);
-      }
-   else
-      printf("scale factor is zero\n");
-}
+   int i, j, k;
+   double a, b, c;
 
+   i = 3;
+   j = 5;
+   i += j;       /* integer to integer */
+   printf("i is %d\n", i);
+   a = 10;
+   b = 3;
+   a += b;       /* float to float */
+   printf("a is %f\n", a);
+   i += b;
+   printf("i is %d\n", i);
+   a += i;
+   printf("a is %f\n", a);
+}
