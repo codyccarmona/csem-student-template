@@ -1,6 +1,10 @@
 
 
+rm -r out/*
+
 make
+
+
  
 for f in tests/*.c; do
     [ -f "$f" ] || continue

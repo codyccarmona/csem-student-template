@@ -107,7 +107,7 @@ struct sem_rec *call(char *f, struct sem_rec *args)
    else
       printf("t%d := f%c t%d %d%s\n", callnum, type, globnum, argcount, quadbuf);
       
-   return (node(callnum, mode, args->back.s_link, args->s_false));
+   return (node(callnum, mode, 0, 0));
 }
 
 /*
