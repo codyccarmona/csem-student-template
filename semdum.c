@@ -187,8 +187,15 @@ void dofor(int m1, struct sem_rec *e2, int m2, struct sem_rec *n1,
            int m3, struct sem_rec *n2, int m4)
 {
    called("dofor");
-   backpatch(e2, m3);
-   backpatch(e2->s_false, m4);
+
+   if(e2->s_place != 0)
+      backpatch(e2, m3);
+   else
+      backpatch(e2->back.s_link, m3);
+
+   if(e2->s_false)
+      backpatch(e2->s_false, m4);
+
    backpatch(n1, m1);
    backpatch(n2, m2);
 }
@@ -289,7 +296,7 @@ void fhead(struct id_entry *p)
       if(localwidths[i] > 1){
          type |= T_ARRAY;
       }
-      int width = type == (type & T_INT) ? 4 * localwidths[i] : 8 * localwidths[i];
+      int width = T_INT == (type & T_INT) ? 4 * localwidths[i] : 8 * localwidths[i];
       printf("localloc %s %d %d\n", localnames[i], type, width);
    }
 }
@@ -443,8 +450,10 @@ struct sem_rec *op1(char *op, struct sem_rec *y)
    
    char type = y->s_mode == T_DOUBLE ? 'f' : 'i';
    printf("t%d := %s%c t%d\n", nexttemp(), op, type, y->s_place);
+   
+   y->s_place = currtemp();
 
-   return (node(currtemp(), y->s_mode, 0, 0));
+   return y;
 }
 
 /*

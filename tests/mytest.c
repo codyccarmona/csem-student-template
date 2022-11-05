@@ -1,20 +1,20 @@
 /*
- * test if nested calls work
+ * test20 - check to see nested ifs work
  */
-fact(int x)
-{
-  if (x<2)
-     return 1;
-  else
-     return x*fact(x-1);
-}
-
 main()
 {
-  int x[10];
-  int i;
-  for (i=0;i<10;i+=1) {
-     x[i]=i;
-     printf("%10d %d %10d\n", fact(x[i]), i, fact(x[i]));
-  }
+   int i, j;
+
+   i = 5;
+   j = 6;
+   if (i < j)
+      if (i > j)
+         printf("i cannot be both greater and less than j\n");
+   if (i > j)
+      if (i < j)
+         printf("i cannot be both greater and less than j\n");
+   if (i < j)
+      if (i == j-1)
+         printf("i is equal to j - 1\n");
 }
+
