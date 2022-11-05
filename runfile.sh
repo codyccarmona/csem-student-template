@@ -16,8 +16,8 @@ for f in tests/*.c; do
 
     if [ -z "$diffout" ]
     then
-    rm tests/${file%.c}.u
-    rm tests/${file%.c}.coo
+    rm out/${file%.c}.u
+    rm out/${file%.c}.coo
     continue
     else
     printf "$file\n"

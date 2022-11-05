@@ -16,6 +16,7 @@ extern int  localnum;                           /* number of local variables  */
 extern char localtypes[MAXLINES];               /* types of local variables   */
 extern char localnames[MAXLINES][MAXLINES];     /* names of local variables   */
 extern int  localwidths[MAXLINES];              /* widths of local variables  */
+
 int labelnum = 0;
 int branchnum = 0;
 int branches[MAXLINES];
@@ -51,17 +52,25 @@ void backpatch(struct sem_rec *p, int k)
 void bgnstmt()
 {
    called("bgnstmt");
+
    extern int lineno;
    static int lastline = 0;
+
    char c = getchar();
    ungetc(c, stdin);
+
    if(lineno != lastline){
-      printf("bgnstmt %d\n", lineno);
-      lastline = lineno;
+      if(c == '\n')
+         lastline = lineno + 1;
+      else
+         lastline = lineno;
+      printf("bgnstmt %d\n", lastline);
    }
    else if(c == '\n'){
       printf("bgnstmt %d\n", ++lastline);
    }
+
+   
 }
 
 /*
@@ -182,7 +191,6 @@ void dofor(int m1, struct sem_rec *e2, int m2, struct sem_rec *n1,
    backpatch(e2->s_false, m4);
    backpatch(n1, m1);
    backpatch(n2, m2);
-   //fprintf(stderr, "sem: dofor not implemented\n");
 }
 
 /*
@@ -199,6 +207,7 @@ void dogoto(char *id)
 void doif(struct sem_rec *e, int m1, int m2)
 {  
    called("doif");
+
    while(e){
       if(e->s_mode != T_LBL){
          e = e->back.s_link;
@@ -217,6 +226,7 @@ void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
                          int m2, int m3)
 {
    called("doifelse");
+
    backpatch(e, m1);
    backpatch(e->s_false, m2);
    backpatch(n, m3);
@@ -227,7 +237,6 @@ void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
  */
 void doret(struct sem_rec *e)
 {
-   //fprintf(stderr, "sem: doret not implemented\n");
    char type = tsize(e->s_mode) == 4 ? 'i' : 'f';
    printf("ret%c t%d\n", type, e->s_place);   
 }
@@ -517,7 +526,7 @@ struct sem_rec *set(char *op, struct sem_rec *x, struct sem_rec *y)
          y = op1("cv", y);
    }
 
-   type = (mode == T_INT) ? 'i' : 'f';
+   type = tsize(mode) == 8 ? 'f' : 'i';
    
    printf("t%d := t%d =%c t%d\n", nexttemp(), tempsetnum, type, y->s_place);
    
