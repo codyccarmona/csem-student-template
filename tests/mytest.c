@@ -1,14 +1,20 @@
 /*
- * test4 - test call to procedure no args
+ * test if nested calls work
  */
-test4()
+fact(int x)
 {
-   printf("in test4\n");
+  if (x<2)
+     return 1;
+  else
+     return x*fact(x-1);
 }
 
 main()
 {
-   test4();
+  int x[10];
+  int i;
+  for (i=0;i<10;i+=1) {
+     x[i]=i;
+     printf("%10d %d %10d\n", fact(x[i]), i, fact(x[i]));
+  }
 }
-
-
