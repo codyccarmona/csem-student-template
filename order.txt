@@ -31,7 +31,7 @@ routines in the sem.c file.
 --dowhile
 dodo
 --ccand
-ccor
+--ccor
 ccnot
 opb
 startloopscope

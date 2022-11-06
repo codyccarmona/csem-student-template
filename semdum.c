@@ -118,11 +118,10 @@ struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
 {
    called("ccand");
    backpatch(e1, m);
-   return (merge(e2, e1));
-
-
-   //fprintf(stderr, "sem: ccand not implemented\n");
-   //return ((struct sem_rec *) NULL);
+   e1 = merge(e1, e2);
+   e1->s_place = e2->s_place;
+   e1->back.s_link->s_place = 0;
+   return e1;
 }
 
 /*
@@ -148,8 +147,13 @@ struct sem_rec *ccnot(struct sem_rec *e)
  */
 struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2)
 {
-   fprintf(stderr, "sem: ccor not implemented\n");
-   return ((struct sem_rec *) NULL);
+   called("ccor");
+
+   backpatch(e1->s_false, m);
+
+   e1 = merge(e1, e2);
+   e1->s_false = NULL;
+   return e1;
 }
 
 /*
@@ -240,13 +244,14 @@ void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
 {
    called("doifelse");
 
-   backpatch(e, m1);
-
-   if(e->back.s_link)
-      backpatch(e->back.s_link->s_false, m2);
-      
-   backpatch(e->s_false, m2);
-   backpatch(n, m3);
+   while(e){
+      if(e->s_place != 0)
+         backpatch(e, m1);
+      if(e->s_false)
+         backpatch(e->s_false, m2);      
+      e = e->back.s_link;
+   }  
+   backpatch(n, m3);       
 }
 
 /*
