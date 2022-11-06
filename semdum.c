@@ -236,8 +236,6 @@ void dofor(int m1, struct sem_rec *e2, int m2, struct sem_rec *n1,
       backpatch(breakrec, m4);
       breakrec = 0;
    }
-
-   
 }
 
 /*
@@ -332,7 +330,7 @@ void dowhile(int m1, struct sem_rec *e, int m2, struct sem_rec *n,
  */
 void endloopscope(int m)
 {
-   fprintf(stderr, "sem: endloopscope not implemented\n");
+   leaveblock();
 }
 
 /*
@@ -475,10 +473,13 @@ void labeldcl(char *id)
  */
 int m()
 {
+   called("m");
+
    static int lastline = 0;
    extern int lineno;
    
-   printf("label L%d\n", ++labelnum);
+   if(labelnum == 0 || labelnum <= branchnum)
+      printf("label L%d\n", ++labelnum);
    return labelnum;
 }
 
@@ -487,6 +488,8 @@ int m()
  */
 struct sem_rec *n()
 {
+   called("n");
+
    printf("br B%d\n", nextbranch());
    return (node(currbranch(), T_LBL, NULL, NULL));
 }
@@ -497,23 +500,28 @@ struct sem_rec *n()
 struct sem_rec *op1(char *op, struct sem_rec *y)
 {   
    called("op1");
+   char type;
 
    if(*op == '@'){
       y->s_mode &= ~T_ADDR;
+      type = y->s_mode == T_DOUBLE ? 'f' : 'i';
    }
    
    if(op == "cv"){
       if(tsize(y->s_mode) == 0){
          y->s_mode &= ~T_ARRAY;
-         y->s_mode = (y->s_mode == T_DOUBLE) ? T_INT : T_DOUBLE;
+         type = (y->s_mode == T_DOUBLE) ? 'i' : 'f';
+         y->s_mode = (y->s_mode == T_DOUBLE) ? T_INT : T_DOUBLE;         
          y->s_mode |= T_ARRAY;
       }
       else{
-         y->s_mode = (y->s_mode == T_DOUBLE) ? T_INT : T_DOUBLE;
+         type = y->s_mode == T_DOUBLE ? 'i' : 'f';
+         y->s_mode = (y->s_mode == T_DOUBLE) ? T_INT : T_DOUBLE;         
       }
    }
-   
-   char type = y->s_mode == T_DOUBLE ? 'f' : 'i';
+   else{
+      type = y->s_mode == T_DOUBLE ? 'f' : 'i';
+   }
    printf("t%d := %s%c t%d\n", nexttemp(), op, type, y->s_place);
    
    y->s_place = currtemp();

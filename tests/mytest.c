@@ -1,20 +1,32 @@
-/* test labels and goto statement */
+int m[6];
+
+scale(int x) {
+   int i;
+
+   if (x == 0)
+      return 0;
+   for (i = 0; i < 6; i += 1)
+      m[i] *= x;
+   return 1;
+}
+
 main()
 {
-   int i, sum;
-
-   sum = 0;
-   i = 0;
-loop:
-   i = i + 1;
-   if (i >= 100)
-      goto out;
-   if (sum <= 200)
-      goto loop;
-   if (sum == 50)
-      goto out;
-   sum = sum + i;
-   goto loop;
-out:
-   printf("i = %d, sum = %d\n", i, sum);
+   int i;
+   int z;
+   m[0] = 0;
+   m[1] = 1;
+   m[2] = 2;
+   m[3] = 3;
+   m[4] = 4;
+   m[5] = 5;
+   z = 10;
+   if (scale(z))
+      for (i = 0; i < 6; i += 1) {
+         printf("m[%d]", i);
+         printf(" = %d\n", m[i]);
+      }
+   else
+      printf("scale factor is zero\n");
 }
+
