@@ -37,7 +37,7 @@ routines in the sem.c file.
 startloopscope
 endloopscope
 --docontinue
-dobreak
+--dobreak
 labeldcl
 dogoto
 -------------- routines needed for other test cases you will create

@@ -1,31 +1,24 @@
-/* test continue statement */
+/* test break statement */
 main()
 {
-   int i, sum;
+   int i;
 
-   sum = 0;
-   for (i = 0; i < 50; i = i+1) {
-      if (sum > 100)
-         continue;
-      sum += i;
-   }
-   printf("sum = %d\n", sum);
-   sum = 0;
+   for (i = 0; i < 100; i = i+1)
+      if (i == 50)
+         break;
+   printf("i=%d\n", i);
    i = 0;
-   while (i < 50) {
+   while (i < 100) {
+      if (i == 50)
+         break;
       i = i+1;
-      if (sum > 100)
-         continue;
-      sum += i;
    }
-   printf("sum = %d\n", sum);
-   sum = 0;
+   printf("i=%d\n", i);
    i = 0;
    do {
+      if (i == 50)
+         break;
       i = i+1;
-      if (sum > 100)
-         continue;
-      sum += i;
-   } while (i < 50);
-   printf("sum = %d\n", sum);
+   } while (i < 100);
+   printf("i=%d\n", i);
 }
