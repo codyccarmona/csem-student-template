@@ -116,8 +116,13 @@ struct sem_rec *call(char *f, struct sem_rec *args)
  */
 struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
 {
-   fprintf(stderr, "sem: ccand not implemented\n");
-   return ((struct sem_rec *) NULL);
+   called("ccand");
+   backpatch(e1, m);
+   return (merge(e2, e1));
+
+
+   //fprintf(stderr, "sem: ccand not implemented\n");
+   //return ((struct sem_rec *) NULL);
 }
 
 /*
@@ -236,6 +241,10 @@ void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
    called("doifelse");
 
    backpatch(e, m1);
+
+   if(e->back.s_link)
+      backpatch(e->back.s_link->s_false, m2);
+      
    backpatch(e->s_false, m2);
    backpatch(n, m3);
 }
