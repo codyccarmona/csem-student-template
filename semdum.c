@@ -138,8 +138,14 @@ struct sem_rec *ccexpr(struct sem_rec *e)
  */
 struct sem_rec *ccnot(struct sem_rec *e)
 {
-   fprintf(stderr, "sem: ccnot not implemented\n");
-   return ((struct sem_rec *) NULL);
+   called("ccnot");
+
+   int btnum = e->s_place, brnum = e->s_false->s_place; 
+
+   e->s_place = brnum;
+   e->s_false->s_place = btnum;
+   
+   return e;
 }
 
 /*

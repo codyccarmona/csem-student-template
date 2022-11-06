@@ -32,7 +32,7 @@ routines in the sem.c file.
 dodo
 --ccand
 --ccor
-ccnot
+--ccnot
 opb
 startloopscope
 endloopscope
