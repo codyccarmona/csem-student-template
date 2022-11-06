@@ -118,9 +118,9 @@ struct sem_rec *ccand(struct sem_rec *e1, int m, struct sem_rec *e2)
 {
    called("ccand");
    backpatch(e1, m);
-   e1 = merge(e1, e2);
    e1->s_place = e2->s_place;
-   e1->back.s_link->s_place = 0;
+   e2->s_place = 0;
+   e1 = merge(e1, e2);
    return e1;
 }
 
@@ -232,11 +232,9 @@ void doif(struct sem_rec *e, int m1, int m2)
    called("doif");
 
    while(e){
-      if(e->s_mode != T_LBL){
-         e = e->back.s_link;
-         continue;
-      }
-      backpatch(e, m1);
+      if(e->s_place != 0)
+         backpatch(e, m1);
+
       backpatch(e->s_false, m2);
       e = e->back.s_link;
    }
