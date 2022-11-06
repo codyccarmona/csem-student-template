@@ -30,7 +30,7 @@ routines in the sem.c file.
 --doifelse?
 --dowhile
 dodo
-ccand
+--ccand
 ccor
 ccnot
 opb
