@@ -1,24 +1,20 @@
-/* test break statement */
+/* test labels and goto statement */
 main()
 {
-   int i;
+   int i, sum;
 
-   for (i = 0; i < 100; i = i+1)
-      if (i == 50)
-         break;
-   printf("i=%d\n", i);
+   sum = 0;
    i = 0;
-   while (i < 100) {
-      if (i == 50)
-         break;
-      i = i+1;
-   }
-   printf("i=%d\n", i);
-   i = 0;
-   do {
-      if (i == 50)
-         break;
-      i = i+1;
-   } while (i < 100);
-   printf("i=%d\n", i);
+loop:
+   i = i + 1;
+   if (i >= 100)
+      goto out;
+   if (sum <= 200)
+      goto loop;
+   if (sum == 50)
+      goto out;
+   sum = sum + i;
+   goto loop;
+out:
+   printf("i = %d, sum = %d\n", i, sum);
 }

@@ -38,6 +38,6 @@ startloopscope
 endloopscope
 --docontinue
 --dobreak
-labeldcl
-dogoto
+--labeldcl
+--dogoto
 -------------- routines needed for other test cases you will create

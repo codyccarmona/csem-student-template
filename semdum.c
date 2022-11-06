@@ -23,7 +23,6 @@ int branches[MAXLINES];
 int currfunctype;
 
 struct sem_rec *continuerec = NULL, *breakrec = NULL;
-int continuecount = 0, breakcount = 0;
 
 int currbranch(){
    return branchnum;
@@ -73,8 +72,6 @@ void bgnstmt()
    else if(c == '\n'){
       printf("bgnstmt %d\n", ++lastline);
    }
-
-   
 }
 
 /*
@@ -181,7 +178,6 @@ void dobreak()
 {
    printf("br B%d\n", nextbranch());
    breakrec = merge(breakrec, (node(currbranch(), T_LBL, 0, 0)));
-   breakcount++;
 }
 
 /*
@@ -249,7 +245,17 @@ void dofor(int m1, struct sem_rec *e2, int m2, struct sem_rec *n1,
  */
 void dogoto(char *id)
 {
-   fprintf(stderr, "sem: dogoto not implemented\n");
+   called("dogoto");
+
+   printf("br B%d\n", nextbranch());
+
+   struct id_entry *p = lookup(id, 0);
+
+   if((p = lookup(id, 0)) == NULL){
+      p = install(id, 0);
+      p->i_type = T_LBL;
+      p->i_width = currbranch();
+   }
 }
 
 /*
@@ -452,8 +458,16 @@ struct sem_rec *sindex(struct sem_rec *x, struct sem_rec *i)
  */
 void labeldcl(char *id)
 {
+   struct id_entry *p;
+
    /* you may assume the maximum number of C label declarations is 50 */
-   fprintf(stderr, "sem: labeldcl not implemented\n");
+   printf("label L%d\n", ++labelnum);
+
+   if((p = lookup(id, 0)) == NULL){
+      p = install(id, 0);
+      p->i_type = T_LBL;
+      p->i_width = labelnum;
+   }
 }
 
 /*
@@ -465,19 +479,6 @@ int m()
    extern int lineno;
    
    printf("label L%d\n", ++labelnum);
-   return labelnum;
-
-   char c = getchar();
-   ungetc(c, stdin);
-
-   if(lastline != lineno){
-      printf("label L%d\n", ++labelnum);
-      lastline = lineno;
-   }
-   else if(c == '\n'){
-      printf("label L%d\n", ++labelnum);
-   }
-
    return labelnum;
 }
 
