@@ -22,6 +22,9 @@ int branchnum = 0;
 int branches[MAXLINES];
 int currfunctype;
 
+struct sem_rec *continuerec = NULL, *end = NULL;
+int continuecount = 0, breakcount = 0;
+
 int currbranch(){
    return branchnum;
 }
@@ -156,9 +159,8 @@ struct sem_rec *ccor(struct sem_rec *e1, int m, struct sem_rec *e2)
    called("ccor");
 
    backpatch(e1->s_false, m);
-
+   e1->s_false->s_place = 0;
    e1 = merge(e1, e2);
-   e1->s_false = NULL;
    return e1;
 }
 
@@ -185,7 +187,9 @@ void dobreak()
  */
 void docontinue()
 {
-   fprintf(stderr, "sem: docontinue not implemented\n");
+   printf("br B%d\n", nextbranch());
+   continuerec = merge(continuerec, (node(currbranch(), T_LBL, 0, 0)));
+   continuecount++;
 }
 
 /*
@@ -193,7 +197,14 @@ void docontinue()
  */
 void dodo(int m1, int m2, struct sem_rec *e, int m3)
 {
-   fprintf(stderr, "sem: dodo not implemented\n");
+   backpatch(e, m1);
+   backpatch(e->s_false, m3);
+   
+   if(continuecount == 1){
+      backpatch(continuerec, m2);
+      continuecount = 0;
+      continuerec = 0;
+   }
 }
 
 /*
@@ -211,6 +222,12 @@ void dofor(int m1, struct sem_rec *e2, int m2, struct sem_rec *n1,
 
    if(e2->s_false)
       backpatch(e2->s_false, m4);
+
+   if(continuecount == 1){
+      backpatch(continuerec, m2);
+      continuecount = 0;
+      continuerec = NULL;
+   }
 
    backpatch(n1, m1);
    backpatch(n2, m2);
@@ -251,7 +268,7 @@ void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
    while(e){
       if(e->s_place != 0)
          backpatch(e, m1);
-      if(e->s_false)
+      if(e->s_false->s_place != 0)
          backpatch(e->s_false, m2);      
       e = e->back.s_link;
    }  
@@ -282,6 +299,12 @@ void dowhile(int m1, struct sem_rec *e, int m2, struct sem_rec *n,
    backpatch(e, m2);
    backpatch(e->s_false, m3);
    backpatch(n, m1);
+
+   if(continuecount == 1){
+      backpatch(continuerec, m1);
+      continuecount = 0;
+      continuerec = NULL;
+   }
 }
 
 /*
