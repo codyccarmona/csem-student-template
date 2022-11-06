@@ -20,6 +20,7 @@ extern int  localwidths[MAXLINES];              /* widths of local variables  */
 int labelnum = 0;
 int branchnum = 0;
 int branches[MAXLINES];
+int currfunctype;
 
 int currbranch(){
    return branchnum;
@@ -244,7 +245,11 @@ void doifelse(struct sem_rec *e, int m1, struct sem_rec *n,
  */
 void doret(struct sem_rec *e)
 {
+   if(e->s_mode != currfunctype)
+      e = op1("cv", e);
+
    char type = tsize(e->s_mode) == 4 ? 'i' : 'f';
+
    printf("ret%c t%d\n", type, e->s_place);   
 }
 
@@ -283,6 +288,10 @@ struct sem_rec *exprs(struct sem_rec *l, struct sem_rec *e)
  */
 void fhead(struct id_entry *p)
 {
+   called("fhead");
+
+   currfunctype = p->i_type;
+
    printf("func %s %d\n", p->i_name, p->i_type);
    
    for(int i = 0; i < formalnum; i++){

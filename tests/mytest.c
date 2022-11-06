@@ -1,20 +1,25 @@
 /*
- * test20 - check to see nested ifs work
+ * test21 - check to see if convert in return works
  */
+double func1(int k)
+{
+   return (k + 1);
+}
+
+int func2(double z)
+{
+   return (z + 2);
+}
+
 main()
 {
-   int i, j;
+   double i, y;
+   int x;
 
-   i = 5;
-   j = 6;
-   if (i < j)
-      if (i > j)
-         printf("i cannot be both greater and less than j\n");
-   if (i > j)
-      if (i < j)
-         printf("i cannot be both greater and less than j\n");
-   if (i < j)
-      if (i == j-1)
-         printf("i is equal to j - 1\n");
+   i = func1(2);
+   printf("i is %f\n", i);
+   y = 3;
+   x = func2(y); 
+   printf("x is %d\n", x);
 }
 
