@@ -33,7 +33,7 @@ dodo
 --ccand
 --ccor
 --ccnot
-opb
+--opb
 startloopscope
 endloopscope
 docontinue

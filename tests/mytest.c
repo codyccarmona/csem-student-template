@@ -1,15 +1,14 @@
 /*
- * test15 - check to see if ! works
+ * test9 - check to see if opb works
  */
 main()
 {
-   int i, j, k;
-
-   i = 3;
+   int i, k;
+   double j;
+   j = 10;
    k = 4;
-   if (!k < i)
-      printf("this should be printed\n");
-   else
-      printf("this should not be printed\n"); 
+   i = j | k;
+   printf("i is %d\n", i);
+   printf("j is %d\n", j>>1);
 }
 

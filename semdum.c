@@ -144,7 +144,7 @@ struct sem_rec *ccnot(struct sem_rec *e)
 
    e->s_place = brnum;
    e->s_false->s_place = btnum;
-   
+
    return e;
 }
 
@@ -513,8 +513,13 @@ struct sem_rec *op2(char *op, struct sem_rec *x, struct sem_rec *y)
  */
 struct sem_rec *opb(char *op, struct sem_rec *x, struct sem_rec *y)
 {
-   fprintf(stderr, "sem: opb not implemented\n");
-   return ((struct sem_rec *) NULL);
+   if(x->s_mode != T_INT)
+      x = op1("cv", x);
+   if(y->s_mode != T_INT)
+      y = op1("cv", y);
+
+   printf("t%d := t%d %si t%d\n", nexttemp(), x->s_place, op, y->s_place);
+   return (node(currtemp(), T_INT, 0, 0));
 }
 
 /*
