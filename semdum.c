@@ -249,7 +249,7 @@ void dogoto(char *id)
 
    struct id_entry *p = lookup(id, 0);
 
-   if((p = lookup(id, 0)) == NULL){
+   if((p = lookup(id, 0)) == NULL){      
       p = install(id, 0);
       p->i_type = T_LBL;
       p->i_width = currbranch();
@@ -461,7 +461,7 @@ void labeldcl(char *id)
    /* you may assume the maximum number of C label declarations is 50 */
    printf("label L%d\n", ++labelnum);
 
-   if((p = lookup(id, 0)) == NULL){
+   if((p = lookup(id, 0)) == NULL){      
       p = install(id, 0);
       p->i_type = T_LBL;
       p->i_width = labelnum;
@@ -478,8 +478,7 @@ int m()
    static int lastline = 0;
    extern int lineno;
    
-   if(labelnum == 0 || labelnum <= branchnum)
-      printf("label L%d\n", ++labelnum);
+   printf("label L%d\n", ++labelnum);
    return labelnum;
 }
 
